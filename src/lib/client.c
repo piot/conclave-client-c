@@ -19,6 +19,7 @@ int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, UdpTransport
     self->memory = memory;
     self->state = ClvClientStateConnected;
     self->transport = *transport;
+    discoidBufferInit(&self->inBuffer, memory, 32 * 1024);
 
     return 0;
 }

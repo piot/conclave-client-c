@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <udp-transport/udp_transport.h>
+#include <discoid/circular_buffer.h>
 
 struct ImprintAllocator;
 
@@ -54,6 +55,7 @@ typedef struct ClvClient {
     size_t frame;
 
     struct ImprintAllocator* memory;
+    DiscoidBuffer inBuffer;
     Clog clog;
 } ClvClient;
 

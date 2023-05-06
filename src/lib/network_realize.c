@@ -3,7 +3,9 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 #include <conclave-client/client.h>
+#include <conclave-client/incoming_api.h>
 #include <conclave-client/network_realizer.h>
+#include <conclave-client/outgoing.h>
 #include <imprint/allocator.h>
 
 void clvClientRealizeInit(ClvClientRealize* self, const ClvClientRealizeSettings* settings)
@@ -157,4 +159,14 @@ void clvClientRealizeUpdate(ClvClientRealize* self, MonotonicTimeMs now)
         default:
             break;
     }
+}
+
+int clvClientRealizeSendPacket(ClvClientRealize* self, int connectionId, const uint8_t* octets, size_t octetCount)
+{
+    return clvClientOutAddPacket(&self->client, connectionId, octets, octetCount);
+}
+
+int clvClientRealizeReadPacket(ClvClientRealize* self, int* connectionId, uint8_t* octets, size_t octetCount)
+{
+    return clvClientInReadPacket(&self->client, connectionId, octets, octetCount);
 }

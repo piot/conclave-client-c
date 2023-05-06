@@ -85,6 +85,28 @@ static int onLoginResponse(ClvClient* self, FldInStream* inStream)
     return 0;
 }
 
+static int onIncomingPacket(ClvClient* self, FldInStream* inStream)
+{
+    uint8_t fromConnectionIndexInRoom;
+    fldInStreamReadUInt8(inStream, &fromConnectionIndexInRoom);
+    uint16_t octetCountInPacket;
+    fldInStreamReadUInt16(inStream, &octetCountInPacket);
+
+    if (discoidBufferWriteAvailable(&self->inBuffer) < octetCountInPacket + 1 + 2) {
+        CLOG_NOTICE("dropping packets since in buffer is full")
+        return 0;
+    }
+
+    discoidBufferWrite(&self->inBuffer, &fromConnectionIndexInRoom, 1);
+    discoidBufferWrite(&self->inBuffer, (uint8_t*) &octetCountInPacket, 2);
+    discoidBufferWrite(&self->inBuffer, inStream->p, octetCountInPacket);
+
+    inStream->p += octetCountInPacket;
+    inStream->pos += octetCountInPacket;
+
+    return 0;
+}
+
 static int clvClientFeed(ClvClient* self, const uint8_t* data, size_t len)
 {
     FldInStream inStream;
@@ -102,6 +124,9 @@ static int clvClientFeed(ClvClient* self, const uint8_t* data, size_t len)
             return onRoomReJoinResponse(self, &inStream);
         case clvSerializeCmdLoginResponse:
             return onLoginResponse(self, &inStream);
+        case clvSerializeCmdPacketToClient:
+            return onIncomingPacket(self, &inStream);
+            return -4;
         default:
             CLOG_ERROR("unknown message %02X", cmd)
             return -1;

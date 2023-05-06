@@ -46,5 +46,6 @@ void clvClientRealizeCreateRoom(ClvClientRealize* self, const ClvSerializeRoomCr
 void clvClientRealizeJoinRoom(ClvClientRealize* self, const ClvSerializeRoomJoinOptions* joinRoom);
 void clvClientRealizeUpdate(ClvClientRealize* self, MonotonicTimeMs now);
 int clvClientRealizeSendPacket(ClvClientRealize* self, int connectionId, const uint8_t* octets, size_t octetCount);
+int clvClientRealizeReadPacket(ClvClientRealize* self, int* connectionId, uint8_t* octets, size_t octetCount);
 
 #endif

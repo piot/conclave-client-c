@@ -27,6 +27,10 @@ version = "*"
 name = 'piot/imprint'
 version = "*"
 
+[[dependencies]]
+name = 'piot/discoid-c'
+version = "*"
+
 [[development]]
 name = 'piot/udp-client-c'
 version = "*"

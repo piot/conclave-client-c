@@ -48,6 +48,7 @@ static int updateLogin(ClvClient* self, FldOutStream* stream)
 }
 
 #include <conclave-client/debug.h>
+#include <conclave-serialize/serialize.h>
 
 static inline int handleStreamState(ClvClient* self, FldOutStream* outStream)
 {
@@ -113,5 +114,16 @@ int clvClientOutgoing(ClvClient* self, MonotonicTimeMs now, UdpTransportOut* tra
 
 int clvClientOutAddPacket(struct ClvClient* self, int toMemberIndex, const uint8_t* octets, size_t octetCount)
 {
-    return 0;
+#define UDP_MAX_SIZE (1200)
+    static uint8_t buf[UDP_MAX_SIZE];
+    FldOutStream outStream;
+    fldOutStreamInit(&outStream, buf, UDP_MAX_SIZE);
+    clvSerializeWriteCommand(&outStream, clvSerializeCmdPacket, "outaddpacket");
+    fldOutStreamWriteUInt32(&outStream, self->mainUserSessionId);
+    clvSerializeWriteRoomId(&outStream, self->mainRoomId);
+    fldOutStreamWriteUInt8(&outStream, self->roomConnectionIndex);
+    fldOutStreamWriteUInt8(&outStream, toMemberIndex);
+    fldOutStreamWriteUInt16(&outStream, octetCount);
+    fldOutStreamWriteOctets(&outStream, octets, octetCount);
+    return self->transport.send(self->transport.self, outStream.octets, outStream.pos);
 }

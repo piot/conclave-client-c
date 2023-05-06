@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
     clvClientRealizeInit(&clientRealize, &settings);
     clvClientRealizeReInit(&clientRealize, &settings);
 
-    if (true) {
+    if (false) {
         ClvSerializeRoomCreateOptions createRoomOptions;
         createRoomOptions.flags = 0;
         createRoomOptions.maxNumberOfPlayers = 4;
@@ -102,10 +102,32 @@ int main(int argc, char* argv[])
                 case ClvClientRealizeStateCleared:
                     break;
                 case ClvClientRealizeStateCreateRoom:
+                    CLOG_NOTICE("CREATED ROOM!")
                     break;
                 case ClvClientRealizeStateJoinRoom:
+                    CLOG_NOTICE("Joined ROOM!")
                     break;
             }
+        }
+
+        switch (clientRealize.state) {
+            case ClvClientRealizeStateJoinRoom: {
+                clvClientRealizeSendPacket(&clientRealize, 0, "Hello", 6);
+                uint8_t inBuf[1200];
+                int inConnectionId;
+                int received = clvClientRealizeReadPacket(&clientRealize, &inConnectionId, inBuf, 1200);
+                if (received > 0) {
+                    CLOG_NOTICE("got packet: '%s' %d", inBuf, inConnectionId);
+                }
+            } break;
+            case ClvClientRealizeStateInit:
+                break;
+            case ClvClientRealizeStateReInit:
+                break;
+            case ClvClientRealizeStateCleared:
+                break;
+            case ClvClientRealizeStateCreateRoom:
+                break;
         }
     }
 
