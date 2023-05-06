@@ -30,7 +30,7 @@ static int updateRoomJoin(ClvClient* self, FldOutStream* stream)
 static int updateRoomReJoin(ClvClient* self, FldOutStream* stream)
 {
     CLOG_INFO("trying to rejoin room %zu (participantIndex:%lu)", self->reJoinRoomOptions.roomId,
-              self->reJoinRoomOptions.participantConnectionIndex)
+              self->reJoinRoomOptions.roomConnectionIndex)
 
     clvSerializeClientOutRoomReJoin(stream, &self->reJoinRoomOptions);
     self->waitTime = 120;

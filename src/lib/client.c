@@ -8,24 +8,17 @@
 
 void clvClientReInit(ClvClient* self, UdpTransportInOut* transport)
 {
-    self->localParticipantCount = 0;
-    for (size_t i = 0; i < CONCLAVE_CLIENT_MAX_LOCAL_USERS_COUNT; ++i) {
-        self->localParticipantLookup[i].participantId = 0;
-        self->localParticipantLookup[i].localUserDeviceIndex = 0;
-    }
     self->transport = *transport;
     self->state = ClvClientStateConnected;
 }
 
-int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, struct ImprintAllocatorWithFree* blobAllocator,
-                  UdpTransportInOut* transport)
+int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, UdpTransportInOut* transport)
 {
     clogInitFromGlobal(&self->clog, "ClvClient");
     self->name = 0;
     self->memory = memory;
     self->state = ClvClientStateConnected;
     self->transport = *transport;
-    self->blobStreamAllocator = blobAllocator;
 
     return 0;
 }

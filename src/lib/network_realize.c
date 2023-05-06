@@ -12,7 +12,7 @@ void clvClientRealizeInit(ClvClientRealize* self, const ClvClientRealizeSettings
     self->state = ClvClientRealizeStateInit;
     self->settings = *settings;
     self->settings.username = tc_str_dup(self->settings.username);
-    clvClientInit(&self->client, settings->memory, settings->blobMemory, &self->settings.transport);
+    clvClientInit(&self->client, settings->memory, &self->settings.transport);
 }
 
 void clvClientRealizeReInit(ClvClientRealize* self, const ClvClientRealizeSettings* settings)
@@ -32,7 +32,7 @@ void clvClientRealizeDestroy(ClvClientRealize* self)
 
 void clvClientRealizeReset(ClvClientRealize* self)
 {
-    clvClientReset(&self->client);
+    // clvClientReset(&self->client);
     self->state = ClvClientRealizeStateCleared;
 }
 
@@ -42,8 +42,7 @@ void clvClientRealizeQuitGame(ClvClientRealize* self)
     self->targetState = ClvClientRealizeStateCleared;
 }
 
-void clvClientRealizeCreateRoom(ClvClientRealize* self, const ClvSerializeRoomCreateOptions* createRoom,
-                                struct ImprintAllocator* allocator)
+void clvClientRealizeCreateRoom(ClvClientRealize* self, const ClvSerializeRoomCreateOptions* createRoom)
 {
     self->createRoomOptions = *createRoom;
     self->createRoomOptions.name = tc_str_dup(createRoom->name);
@@ -55,12 +54,6 @@ void clvClientRealizeJoinRoom(ClvClientRealize* self, const ClvSerializeRoomJoin
 {
     self->joinRoomOptions = *joinRoom;
     self->joinRoomOptions.name = tc_str_dup(joinRoom->name);
-    self->joinRoomOptions.playerCount = joinRoom->playerCount;
-    for (size_t i = 0; i < joinRoom->playerCount; ++i) {
-        self->joinRoomOptions.players[i].name = tc_str_dup(joinRoom->players[i].name);
-        self->joinRoomOptions.players[i].localIndex = joinRoom->players[i].localIndex;
-    }
-
     self->targetState = ClvClientRealizeStateJoinRoom;
 }
 

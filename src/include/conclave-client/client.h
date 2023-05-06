@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include <udp-transport/udp_transport.h>
 
-struct ImprintAllocatorWithFree;
 struct ImprintAllocator;
 
 struct FldOutStream;
@@ -32,12 +31,6 @@ typedef enum ClvClientState {
 } ClvClientState;
 
 #define CONCLAVE_CLIENT_MAX_LOCAL_USERS_COUNT (8)
-#define CONCLAVE_CLIENT_MAX_USERS_COUNT (32)
-
-typedef struct ClvClientParticipantEntry {
-    uint8_t localUserDeviceIndex;
-    uint8_t participantId;
-} ClvClientParticipantEntry;
 
 struct ImprintAllocator;
 
@@ -54,22 +47,17 @@ typedef struct ClvClient {
     ClvClientState state;
     uint64_t mainUserSessionId;
     uint64_t mainRoomId;
-    uint64_t mainGameId;
-    uint8_t participantsConnectionIndex;
-    ClvClientParticipantEntry localParticipantLookup[CONCLAVE_CLIENT_MAX_LOCAL_USERS_COUNT];
-    size_t localParticipantCount;
+    uint8_t roomConnectionIndex;
 
     UdpTransportInOut transport;
 
     size_t frame;
 
     struct ImprintAllocator* memory;
-    struct ImprintAllocatorWithFree* blobStreamAllocator;
     Clog clog;
 } ClvClient;
 
-int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, struct ImprintAllocatorWithFree* blobAllocator,
-                  UdpTransportInOut* transport);
+int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, UdpTransportInOut* transport);
 void clvClientReset(ClvClient* self);
 void clvClientReInit(ClvClient* self, UdpTransportInOut* transport);
 void clvClientDestroy(ClvClient* self);

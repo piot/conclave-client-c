@@ -12,7 +12,7 @@ struct ClvClient;
 
 int clvClientLogin(struct ClvClient* self, const char* name);
 int clvClientRoomCreate(struct ClvClient* self, const ClvSerializeRoomCreateOptions* rooms);
-int clvClientJoinGame(struct ClvClient* self);
 int clvClientRoomJoin(struct ClvClient* self, const ClvSerializeRoomJoinOptions* name);
+int clvClientReJoin(struct ClvClient* self);
 
 #endif

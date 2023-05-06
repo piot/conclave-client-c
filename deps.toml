@@ -28,5 +28,5 @@ name = 'piot/imprint'
 version = "*"
 
 [[development]]
-name = 'piot/udp-server-c'
+name = 'piot/udp-client-c'
 version = "*"

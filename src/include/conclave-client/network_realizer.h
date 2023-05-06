@@ -10,7 +10,6 @@
 #include <conclave-serialize/types.h>
 #include <stddef.h>
 
-struct ImprintMemory;
 struct ImprintAllocator;
 
 typedef enum ClvClientRealizeState {
@@ -25,7 +24,6 @@ typedef struct ClvClientRealizeSettings {
     UdpTransportInOut transport;
     const char* username;
     struct ImprintAllocator* memory;
-    struct ImprintAllocatorWithFree* blobMemory;
 } ClvClientRealizeSettings;
 
 typedef struct ClvClientRealize {
@@ -44,11 +42,9 @@ void clvClientRealizeReInit(ClvClientRealize* self, const ClvClientRealizeSettin
 void clvClientRealizeDestroy(ClvClientRealize* self);
 void clvClientRealizeReset(ClvClientRealize* self);
 void clvClientRealizeQuitGame(ClvClientRealize* self);
-void clvClientRealizeCreateRoom(ClvClientRealize* self,
-                                          const ClvSerializeRoomCreateOptions* roomOptions, struct ImprintAllocator* allocator);
+void clvClientRealizeCreateRoom(ClvClientRealize* self, const ClvSerializeRoomCreateOptions* roomOptions);
 void clvClientRealizeJoinRoom(ClvClientRealize* self, const ClvSerializeRoomJoinOptions* joinRoom);
 void clvClientRealizeUpdate(ClvClientRealize* self, MonotonicTimeMs now);
-
 int clvClientRealizeSendPacket(ClvClientRealize* self, int connectionId, const uint8_t* octets, size_t octetCount);
 
 #endif

@@ -34,11 +34,6 @@ int clvClientRoomJoin(ClvClient* self, const ClvSerializeRoomJoinOptions* joinOp
         return -2;
     }
     self->joinRoomOptions.name = tc_str_dup(joinOptions->name);
-    self->joinRoomOptions.playerCount = joinOptions->playerCount;
-    for (size_t i = 0; i < joinOptions->playerCount; ++i) {
-        self->joinRoomOptions.players[i].name = tc_str_dup(joinOptions->players[i].name);
-        self->joinRoomOptions.players[i].localIndex = joinOptions->players[i].localIndex;
-    }
     self->state = ClvClientStateRoomJoin;
     self->waitTime = 0;
 
@@ -47,24 +42,13 @@ int clvClientRoomJoin(ClvClient* self, const ClvSerializeRoomJoinOptions* joinOp
 
 int clvClientReJoin(ClvClient* self)
 {
-    if (self->localParticipantCount <= 0) {
+    if (self->roomConnectionIndex <= 0) {
         CLOG_ERROR("can not rejoin, we don't have participants")
         return -1;
     }
     self->state = ClvClientStateRoomReJoin;
     self->reJoinRoomOptions.roomId = self->mainRoomId;
-    self->reJoinRoomOptions.roomConnectionIndex = self->participantsConnectionIndex;
-    self->waitTime = 0;
-
-    return 0;
-}
-
-int clvClientJoinGame(ClvClient* self)
-{
-    if (self->state != ClvClientStatePlaying) {
-        return -2;
-    }
-    self->state = ClvClientStateRoomJoin;
+    self->reJoinRoomOptions.roomConnectionIndex = self->roomConnectionIndex;
     self->waitTime = 0;
 
     return 0;

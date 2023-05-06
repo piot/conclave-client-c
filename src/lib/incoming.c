@@ -10,48 +10,23 @@
 #include <flood/in_stream.h>
 #include <imprint/allocator.h>
 
-static int readParticipantConnectionIdAndParticipants(ClvClient* self, FldInStream* inStream)
-{
-    fldInStreamReadUInt8(inStream, &self->participantsConnectionIndex);
-
-    uint8_t participantCount;
-    fldInStreamReadUInt8(inStream, &participantCount);
-    if (participantCount > CONCLAVE_CLIENT_MAX_LOCAL_USERS_COUNT) {
-        CLOG_ERROR("we can not have more than %d local users (%d)", CONCLAVE_CLIENT_MAX_LOCAL_USERS_COUNT,
-                   participantCount)
-        return -1;
-    }
-
-    self->localParticipantCount = participantCount;
-
-    for (size_t i = 0; i < participantCount; ++i) {
-        uint8_t localIndex;
-        fldInStreamReadUInt8(inStream, &localIndex);
-        uint8_t participantId;
-        fldInStreamReadUInt8(inStream, &participantId);
-        CLOG_INFO("** -> I am participant id: %d (localIndex:%d)", participantId, localIndex)
-        self->localParticipantLookup[i].localUserDeviceIndex = localIndex;
-        self->localParticipantLookup[i].participantId = participantId;
-    }
-
-    return participantCount;
-}
-
 static int onRoomCreateResponse(ClvClient* self, FldInStream* inStream)
 {
     uint32_t roomId;
     clvSerializeReadRoomId(inStream, &roomId);
 
-    int readErr = readParticipantConnectionIdAndParticipants(self, inStream);
+    uint8_t roomConnectionIndex;
+    int readErr = clvSerializeReadRoomConnectionIndex(inStream, &roomConnectionIndex);
     if (readErr < 0) {
         return readErr;
     }
 
-    CLOG_INFO("room create response. room id: %d channel %d", roomId, self->roomCreateChannelId)
-
     self->state = ClvClientStatePlaying;
     self->waitTime = 0;
     self->mainRoomId = roomId;
+    self->roomConnectionIndex = roomConnectionIndex;
+
+    CLOG_INFO("room create response. room id: %d connectionIndex: %d", roomId, roomConnectionIndex)
 
     return 0;
 }
@@ -61,38 +36,37 @@ static int onRoomJoinResponse(ClvClient* self, FldInStream* inStream)
     uint32_t roomId;
     clvSerializeReadRoomId(inStream, &roomId);
 
-    int participantCount = readParticipantConnectionIdAndParticipants(self, inStream);
-    if (participantCount < 0) {
-        return participantCount;
+    uint8_t roomConnectionIndex;
+    int err = clvSerializeReadRoomConnectionIndex(inStream, &roomConnectionIndex);
+    if (err < 0) {
+        return err;
     }
 
-    CLOG_INFO("room join response. room id: %d. connection index %d participants: %d", roomId,
-              self->participantsConnectionIndex, participantCount)
+    self->mainRoomId = roomId;
+    self->roomConnectionIndex = roomConnectionIndex;
+
+    CLOG_INFO("room join response. room id: %d. connection index %d", roomId, self->roomConnectionIndex)
 
     self->state = ClvClientStatePlaying;
-    self->mainRoomId = roomId;
 
     self->reJoinRoomOptions.roomId = roomId;
-    self->reJoinRoomOptions.roomConnectionIndex = self->participantsConnectionIndex;
-    clvClientReJoin(self);
-
-    /*
-    self->state = clvClientReJoin(self);
-    self->waitTime = 0;
-
-
-    self->nextStepIdToSendToServer = self->joinedGameState.stepId;
-    */
+    self->reJoinRoomOptions.roomConnectionIndex = self->roomConnectionIndex;
 
     return 0;
 }
 
 static int onRoomReJoinResponse(ClvClient* self, FldInStream* inStream)
 {
-    CLOG_VERBOSE("rejoin answer: stateId: %04X octetCount:%zu channel:%02X", stateId, octetCount, channelId)
+    uint32_t roomId;
+    clvSerializeReadRoomId(inStream, &roomId);
+    uint8_t roomConnectionIndex;
+    clvSerializeReadRoomConnectionIndex(inStream, &roomConnectionIndex);
 
+    CLOG_VERBOSE("rejoined room: %d %d", roomId, roomConnectionIndex)
+
+    self->mainRoomId = roomId;
+    self->roomConnectionIndex = roomConnectionIndex;
     self->state = ClvClientStatePlaying;
-    //    self->hostState = ClvClientHostStateClient;
     self->waitTime = 0;
 
     return 0;
