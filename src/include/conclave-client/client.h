@@ -8,12 +8,12 @@
 #include <clog/clog.h>
 #include <conclave-client/outgoing_api.h>
 #include <conclave-serialize/client_out.h>
+#include <discoid/circular_buffer.h>
 #include <monotonic-time/monotonic_time.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <udp-transport/udp_transport.h>
-#include <discoid/circular_buffer.h>
 
 struct ImprintAllocator;
 
