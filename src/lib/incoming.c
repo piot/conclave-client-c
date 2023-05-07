@@ -5,6 +5,7 @@
 #include <clog/clog.h>
 #include <conclave-client/client.h>
 #include <conclave-client/incoming.h>
+#include <conclave-serialize/client_in.h>
 #include <conclave-serialize/debug.h>
 #include <conclave-serialize/serialize.h>
 #include <flood/in_stream.h>
@@ -51,6 +52,22 @@ static int onRoomJoinResponse(ClvClient* self, FldInStream* inStream)
 
     self->reJoinRoomOptions.roomId = roomId;
     self->reJoinRoomOptions.roomConnectionIndex = self->roomConnectionIndex;
+
+    return 0;
+}
+
+static int onListRoomsResponse(ClvClient* self, FldInStream* inStream)
+{
+    clvSerializeClientInListRoomsResponse(inStream, &self->listRoomsResponseOptions);
+
+    CLOG_INFO("got list of rooms back %zu", self->listRoomsResponseOptions.roomInfoCount);
+    for (size_t i = 0; i < self->listRoomsResponseOptions.roomInfoCount; ++i) {
+        const ClvSerializeRoomInfo* roomInfo = &self->listRoomsResponseOptions.roomInfos[i];
+        CLOG_INFO(" %zu: %d '%s' '%s'", i, roomInfo->roomId, roomInfo->roomName, roomInfo->hostUserName)
+    }
+
+    self->state = ClvClientStateListRoomDone;
+    self->waitTime = 160;
 
     return 0;
 }
@@ -122,6 +139,8 @@ static int clvClientFeed(ClvClient* self, const uint8_t* data, size_t len)
             return onRoomJoinResponse(self, &inStream);
         case clvSerializeCmdRoomReJoinResponse:
             return onRoomReJoinResponse(self, &inStream);
+        case clvSerializeCmdListRoomsResponse:
+            return onListRoomsResponse(self, &inStream);
         case clvSerializeCmdLoginResponse:
             return onLoginResponse(self, &inStream);
         case clvSerializeCmdPacketToClient:

@@ -28,6 +28,10 @@ static const char* stateToString(ClvClientState state)
             return "connected";
         case ClvClientStateRoomJoin:
             return "room join";
+        case ClvClientStateListRooms:
+            return "trying to list rooms";
+        case ClvClientStateListRoomDone:
+            return "list rooms complete";
     }
 
     return "unknown";

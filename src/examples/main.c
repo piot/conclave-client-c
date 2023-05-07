@@ -72,18 +72,29 @@ int main(int argc, char* argv[])
     clvClientRealizeInit(&clientRealize, &settings);
     clvClientRealizeReInit(&clientRealize, &settings);
 
-    if (false) {
-        ClvSerializeRoomCreateOptions createRoomOptions;
-        createRoomOptions.flags = 0;
-        createRoomOptions.maxNumberOfPlayers = 4;
-        createRoomOptions.name = "My Own Room";
+    int operation = 2;
 
-        clvClientRealizeCreateRoom(&clientRealize, &createRoomOptions);
-    } else {
-        ClvSerializeRoomJoinOptions joinRoomOptions;
-        joinRoomOptions.name = "My Own Room";
+    switch (operation) {
+        case 0: {
+            ClvSerializeRoomCreateOptions createRoomOptions;
+            createRoomOptions.flags = 0;
+            createRoomOptions.maxNumberOfPlayers = 4;
+            createRoomOptions.name = "My Own Room";
 
-        clvClientRealizeJoinRoom(&clientRealize, &joinRoomOptions);
+            clvClientRealizeCreateRoom(&clientRealize, &createRoomOptions);
+        } break;
+        case 1: {
+            ClvSerializeRoomJoinOptions joinRoomOptions;
+            joinRoomOptions.roomIdToJoin = 1;
+
+            clvClientRealizeJoinRoom(&clientRealize, &joinRoomOptions);
+        } break;
+        case 2: {
+            ClvSerializeListRoomsOptions listRoomsOptions;
+            listRoomsOptions.applicationId = 42;
+            listRoomsOptions.maximumCount = 5;
+            clvClientRealizeListRooms(&clientRealize, &listRoomsOptions);
+        } break;
     }
 
     ClvClientRealizeState reportedState;
@@ -97,10 +108,6 @@ int main(int argc, char* argv[])
         if (reportedState != clientRealize.state) {
             reportedState = clientRealize.state;
             switch (clientRealize.state) {
-                case ClvClientRealizeStateInit:
-                case ClvClientRealizeStateReInit:
-                case ClvClientRealizeStateCleared:
-                    break;
                 case ClvClientRealizeStateCreateRoom:
                     CLOG_NOTICE("CREATED ROOM!")
                     break;
@@ -110,24 +117,16 @@ int main(int argc, char* argv[])
             }
         }
 
-        switch (clientRealize.state) {
-            case ClvClientRealizeStateJoinRoom: {
-                clvClientRealizeSendPacket(&clientRealize, 0, "Hello", 6);
+        if (clientRealize.isInRoom) {
+            clvClientRealizeSendPacket(&clientRealize, 0, "Hello", 6);
+            if (false) {
                 uint8_t inBuf[1200];
                 int inConnectionId;
                 int received = clvClientRealizeReadPacket(&clientRealize, &inConnectionId, inBuf, 1200);
                 if (received > 0) {
                     CLOG_NOTICE("got packet: '%s' %d", inBuf, inConnectionId);
                 }
-            } break;
-            case ClvClientRealizeStateInit:
-                break;
-            case ClvClientRealizeStateReInit:
-                break;
-            case ClvClientRealizeStateCleared:
-                break;
-            case ClvClientRealizeStateCreateRoom:
-                break;
+            }
         }
     }
 

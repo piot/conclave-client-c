@@ -33,7 +33,7 @@ int clvClientRoomJoin(ClvClient* self, const ClvSerializeRoomJoinOptions* joinOp
     if (self->state != ClvClientStateLoggedIn) {
         return -2;
     }
-    self->joinRoomOptions.name = tc_str_dup(joinOptions->name);
+    self->joinRoomOptions.roomIdToJoin = joinOptions->roomIdToJoin;
     self->state = ClvClientStateRoomJoin;
     self->waitTime = 0;
 
@@ -52,6 +52,21 @@ int clvClientReJoin(ClvClient* self)
     self->waitTime = 0;
 
     return 0;
+}
+
+int clvClientListRooms(struct ClvClient* self, const ClvSerializeListRoomsOptions* options)
+{
+    CLOG_DEBUG("try to list rooms")
+    if (self->state != ClvClientStateLoggedIn) {
+        return -2;
+    }
+    self->listRoomsOptions.applicationId = options->applicationId;
+    self->listRoomsOptions.maximumCount = options->maximumCount;
+    self->state = ClvClientStateListRooms;
+    self->waitTime = 0;
+
+    return 0;
+
 }
 
 

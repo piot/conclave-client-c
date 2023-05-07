@@ -20,8 +20,19 @@ static int updateRoomCreate(ClvClient* self, FldOutStream* stream)
 
 static int updateRoomJoin(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_INFO("creating join room request '%s' (user session:%lu)", self->joinRoomOptions.name, self->mainUserSessionId)
+    CLOG_INFO("creating join room request roomId:%d (user session:%lu)", self->joinRoomOptions.roomIdToJoin,
+              self->mainUserSessionId)
     clvSerializeClientOutRoomJoin(stream, self->mainUserSessionId, &self->joinRoomOptions);
+    self->waitTime = 120;
+
+    return 0;
+}
+
+static int updateListRooms(ClvClient* self, FldOutStream* stream)
+{
+    CLOG_INFO("querying for rooms list %d, %d (user session:%lu)", self->listRoomsOptions.applicationId,
+              self->listRoomsOptions.maximumCount, self->mainUserSessionId)
+    clvSerializeClientOutListRooms(stream, self->mainUserSessionId, &self->listRoomsOptions);
     self->waitTime = 120;
 
     return 0;
@@ -65,6 +76,10 @@ static inline int handleStreamState(ClvClient* self, FldOutStream* outStream)
         case ClvClientStateRoomReJoin:
             return updateRoomReJoin(self, outStream);
             break;
+        case ClvClientStateListRooms:
+            return updateListRooms(self, outStream);
+            break;
+
         default:
             CLOG_ERROR("Unknown state %d", self->state)
     }
@@ -80,6 +95,7 @@ static inline int handleState(ClvClient* self, MonotonicTimeMs now, UdpTransport
         case ClvClientStateLoggedIn:
         case ClvClientStateConnected:
         case ClvClientStatePlaying:
+        case ClvClientStateListRoomDone:
             return 0;
             break;
 

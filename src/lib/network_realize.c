@@ -14,6 +14,7 @@ void clvClientRealizeInit(ClvClientRealize* self, const ClvClientRealizeSettings
     self->state = ClvClientRealizeStateInit;
     self->settings = *settings;
     self->settings.username = tc_str_dup(self->settings.username);
+    self->isInRoom = false;
     clvClientInit(&self->client, settings->memory, &self->settings.transport);
 }
 
@@ -23,6 +24,7 @@ void clvClientRealizeReInit(ClvClientRealize* self, const ClvClientRealizeSettin
     self->state = ClvClientRealizeStateReInit;
     self->settings = *settings;
     self->settings.username = tc_str_dup(self->settings.username);
+    self->isInRoom = false;
     clvClientReInit(&self->client, &self->settings.transport);
 }
 
@@ -55,8 +57,14 @@ void clvClientRealizeCreateRoom(ClvClientRealize* self, const ClvSerializeRoomCr
 void clvClientRealizeJoinRoom(ClvClientRealize* self, const ClvSerializeRoomJoinOptions* joinRoom)
 {
     self->joinRoomOptions = *joinRoom;
-    self->joinRoomOptions.name = tc_str_dup(joinRoom->name);
+    self->joinRoomOptions.roomIdToJoin = joinRoom->roomIdToJoin;
     self->targetState = ClvClientRealizeStateJoinRoom;
+}
+
+void clvClientRealizeListRooms(ClvClientRealize* self, const ClvSerializeListRoomsOptions* listRooms)
+{
+    self->listRoomsOptions = *listRooms;
+    self->targetState = ClvClientRealizeStateListRooms;
 }
 
 static void tryConnectAndLogin(ClvClientRealize* self)
@@ -93,6 +101,7 @@ static void tryCreateRoom(ClvClientRealize* self)
             break;
         case ClvClientStatePlaying:
             self->state = ClvClientRealizeStateCreateRoom;
+            self->isInRoom = true;
             break;
         case ClvClientStateIdle:
             break;
@@ -120,6 +129,34 @@ static void tryJoinRoom(ClvClientRealize* self)
             break;
         case ClvClientStatePlaying:
             self->state = ClvClientRealizeStateJoinRoom;
+            self->isInRoom = true;
+            break;
+        case ClvClientStateIdle:
+            break;
+        case ClvClientStateConnecting:
+            break;
+        case ClvClientStateConnected:
+            break;
+        case ClvClientStateLogin:
+            break;
+        case ClvClientStateRoomCreate:
+            break;
+        case ClvClientStateRoomJoin:
+            break;
+        case ClvClientStateRoomReJoin:
+            break;
+    }
+}
+
+static void tryListRooms(ClvClientRealize* self)
+{
+    tryConnectAndLogin(self);
+    switch (self->client.state) {
+        case ClvClientStateLoggedIn:
+            clvClientListRooms(&self->client, &self->listRoomsOptions);
+            break;
+        case ClvClientStateListRoomDone:
+            self->state = ClvClientRealizeStateListRoomsDone;
             break;
         case ClvClientStateIdle:
             break;
@@ -150,6 +187,9 @@ void clvClientRealizeUpdate(ClvClientRealize* self, MonotonicTimeMs now)
             break;
         case ClvClientRealizeStateJoinRoom:
             tryJoinRoom(self);
+            break;
+        case ClvClientRealizeStateListRooms:
+            tryListRooms(self);
             break;
         case ClvClientRealizeStateCleared:
             if (self->state != ClvClientRealizeStateCleared) {

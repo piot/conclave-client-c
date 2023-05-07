@@ -28,6 +28,8 @@ typedef enum ClvClientState {
     ClvClientStateRoomCreate,
     ClvClientStateRoomJoin,
     ClvClientStateRoomReJoin,
+    ClvClientStateListRooms,
+    ClvClientStateListRoomDone,
     ClvClientStatePlaying,
 } ClvClientState;
 
@@ -41,6 +43,8 @@ typedef struct ClvClient {
     ClvSerializeRoomCreateOptions createRoomOptions;
     ClvSerializeRoomJoinOptions joinRoomOptions;
     ClvSerializeRoomReJoinOptions reJoinRoomOptions;
+    ClvSerializeListRoomsOptions listRoomsOptions;
+    ClvSerializeListRoomsResponseOptions listRoomsResponseOptions;
 
     int waitTime;
 

@@ -14,5 +14,6 @@ int clvClientLogin(struct ClvClient* self, const char* name);
 int clvClientRoomCreate(struct ClvClient* self, const ClvSerializeRoomCreateOptions* rooms);
 int clvClientRoomJoin(struct ClvClient* self, const ClvSerializeRoomJoinOptions* name);
 int clvClientReJoin(struct ClvClient* self);
+int clvClientListRooms(struct ClvClient* self, const ClvSerializeListRoomsOptions* options);
 
 #endif
