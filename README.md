@@ -31,7 +31,8 @@ typedef struct ClvSerializeRoomCreateOptions {
     const char* name;
 } ClvSerializeRoomCreateOptions;
 
-void clvClientRealizeCreateRoom(ClvClientRealize* self, const ClvSerializeRoomCreateOptions* roomOptions);
+void clvClientRealizeCreateRoom(ClvClientRealize* self,
+                                const ClvSerializeRoomCreateOptions* roomOptions);
 ```
 
 ### List Rooms
@@ -42,7 +43,8 @@ typedef struct ClvSerializeListRoomsOptions {
     uint8_t maximumCount;
 } ClvSerializeListRoomsOptions;
 
-void clvClientRealizeListRooms(ClvClientRealize* self, const ClvSerializeListRoomsOptions* listRooms);
+void clvClientRealizeListRooms(ClvClientRealize* self,
+                               const ClvSerializeListRoomsOptions* listRooms);
 ```
 
 ### Join Room
