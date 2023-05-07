@@ -99,6 +99,7 @@ int main(int argc, char* argv[])
 
     ClvClientRealizeState reportedState;
     reportedState = ClvClientRealizeStateInit;
+    uint16_t packetCount = 0;
     while (true) {
         usleep(16 * 1000);
 
@@ -129,13 +130,19 @@ int main(int argc, char* argv[])
         }
 
         if (clientRealize.isInRoom) {
-            clvClientRealizeSendPacket(&clientRealize, 0, "Hello", 6);
-            if (false) {
+            uint8_t outBuf[32];
+            tc_snprintf(outBuf, 32, "Hello %04X", packetCount);
+            CLOG_INFO("sent: '%s'", outBuf)
+            clvClientRealizeSendPacket(&clientRealize, 0, outBuf, 11);
+            packetCount++;
+            if (true) {
                 uint8_t inBuf[1200];
                 int inConnectionId;
-                int received = clvClientRealizeReadPacket(&clientRealize, &inConnectionId, inBuf, 1200);
-                if (received > 0) {
-                    CLOG_NOTICE("got packet: '%s' %d", inBuf, inConnectionId);
+                for (size_t i = 0; i < 30; ++i) {
+                    int received = clvClientRealizeReadPacket(&clientRealize, &inConnectionId, inBuf, 1200);
+                    if (received > 0) {
+                        CLOG_NOTICE("got packet: '%s' %d", inBuf, inConnectionId);
+                    }
                 }
             }
         }
