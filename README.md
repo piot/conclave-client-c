@@ -2,6 +2,8 @@
 
 Connects to a [Conclave Server](https://github.com/piot/conclave-server-lib) using the [Conclave Protocol](https://github.com/piot/conclave-serialize-c).
 
+> :warning: This library is used for testing purposes, do not use in production!
+
 ## Usage
 
 ### Initialize
