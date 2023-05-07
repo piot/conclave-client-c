@@ -125,6 +125,7 @@ static void tryJoinRoom(ClvClientRealize* self)
     tryConnectAndLogin(self);
     switch (self->client.state) {
         case ClvClientStateLoggedIn:
+        case ClvClientStateListRoomDone:
             clvClientRoomJoin(&self->client, &self->joinRoomOptions);
             break;
         case ClvClientStatePlaying:

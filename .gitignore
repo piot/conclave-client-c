@@ -13,3 +13,4 @@ Makefile
 *.a
 *.cmake
 CMakeCache.txt
+src/examples/conclave_client_cli

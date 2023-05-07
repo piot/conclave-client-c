@@ -114,6 +114,17 @@ int main(int argc, char* argv[])
                 case ClvClientRealizeStateJoinRoom:
                     CLOG_NOTICE("Joined ROOM!")
                     break;
+                case ClvClientRealizeStateListRoomsDone: {
+                    CLOG_NOTICE("Rooms Done!")
+                    if (clientRealize.client.listRoomsResponseOptions.roomInfoCount > 0) {
+                        CLOG_NOTICE("Joining first room")
+                        ClvSerializeRoomJoinOptions joinRoomOptions;
+                        joinRoomOptions.roomIdToJoin = clientRealize.client.listRoomsResponseOptions.roomInfos[0]
+                                                           .roomId;
+                        clvClientRealizeJoinRoom(&clientRealize, &joinRoomOptions);
+                    }
+                    break;
+                }
             }
         }
 

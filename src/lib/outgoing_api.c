@@ -14,11 +14,17 @@ int clvClientLogin(ClvClient* self, const char* name)
     return 0;
 }
 
+static bool isInStableStateAndNotInRoom(const ClvClient* self)
+{
+    return self->state == ClvClientStateLoggedIn || self->state == ClvClientStateListRoomDone;
+}
+
 int clvClientRoomCreate(ClvClient* self, const ClvSerializeRoomCreateOptions* roomCreate)
 {
-    if (self->state != ClvClientStateLoggedIn) {
+    if (!isInStableStateAndNotInRoom(self)) {
         return -2;
     }
+
     self->createRoomOptions = *roomCreate;
     self->createRoomOptions.name = tc_str_dup(roomCreate->name);
     self->state = ClvClientStateRoomCreate;
@@ -30,7 +36,7 @@ int clvClientRoomCreate(ClvClient* self, const ClvSerializeRoomCreateOptions* ro
 int clvClientRoomJoin(ClvClient* self, const ClvSerializeRoomJoinOptions* joinOptions)
 {
     CLOG_DEBUG("joining room")
-    if (self->state != ClvClientStateLoggedIn) {
+    if (!isInStableStateAndNotInRoom(self)) {
         return -2;
     }
     self->joinRoomOptions.roomIdToJoin = joinOptions->roomIdToJoin;
@@ -42,6 +48,10 @@ int clvClientRoomJoin(ClvClient* self, const ClvSerializeRoomJoinOptions* joinOp
 
 int clvClientReJoin(ClvClient* self)
 {
+    if (!isInStableStateAndNotInRoom(self)) {
+        return -2;
+    }
+
     if (self->roomConnectionIndex <= 0) {
         CLOG_ERROR("can not rejoin, we don't have participants")
         return -1;
@@ -66,7 +76,4 @@ int clvClientListRooms(struct ClvClient* self, const ClvSerializeListRoomsOption
     self->waitTime = 0;
 
     return 0;
-
 }
-
-
