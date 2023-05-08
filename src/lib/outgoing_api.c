@@ -35,7 +35,7 @@ int clvClientRoomCreate(ClvClient* self, const ClvSerializeRoomCreateOptions* ro
 
 int clvClientRoomJoin(ClvClient* self, const ClvSerializeRoomJoinOptions* joinOptions)
 {
-    CLOG_DEBUG("joining room")
+    CLOG_C_DEBUG(&self->log, "joining room")
     if (!isInStableStateAndNotInRoom(self)) {
         return -2;
     }
@@ -53,7 +53,7 @@ int clvClientReJoin(ClvClient* self)
     }
 
     if (self->roomConnectionIndex <= 0) {
-        CLOG_ERROR("can not rejoin, we don't have participants")
+        CLOG_C_ERROR(&self->log, "can not rejoin, we don't have participants")
         return -1;
     }
     self->state = ClvClientStateRoomReJoin;
@@ -66,7 +66,7 @@ int clvClientReJoin(ClvClient* self)
 
 int clvClientListRooms(struct ClvClient* self, const ClvSerializeListRoomsOptions* options)
 {
-    CLOG_DEBUG("try to list rooms")
+    CLOG_C_DEBUG(&self->log, "try to list rooms")
     if (self->state != ClvClientStateLoggedIn) {
         return -2;
     }

@@ -60,10 +60,10 @@ typedef struct ClvClient {
 
     struct ImprintAllocator* memory;
     DiscoidBuffer inBuffer;
-    Clog clog;
+    Clog log;
 } ClvClient;
 
-int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, UdpTransportInOut* transport);
+int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, UdpTransportInOut* transport, Clog log);
 void clvClientReset(ClvClient* self);
 void clvClientReInit(ClvClient* self, UdpTransportInOut* transport);
 void clvClientDestroy(ClvClient* self);

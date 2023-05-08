@@ -58,8 +58,14 @@ int main(int argc, char* argv[])
         return startupErr;
     }
 
+    const char* hostToConnectTo = "127.0.0.1";
+
+    if (argc > 1) {
+        hostToConnectTo = argv[1];
+    }
+
     UdpClientSocket udpClientSocket;
-    udpClientInit(&udpClientSocket, "127.0.0.1", 27003);
+    udpClientInit(&udpClientSocket, hostToConnectTo, 27003);
 
     transportInOut.self = &udpClientSocket;
     transportInOut.receive = clientReceive;
@@ -68,6 +74,10 @@ int main(int argc, char* argv[])
     settings.memory = &memory.tagAllocator.info;
     settings.transport = transportInOut;
     settings.username = "Piot";
+    Clog clvClientLog;
+    clvClientLog.config = &g_clog;
+    clvClientLog.constantPrefix = "ClvClient";
+    settings.log = clvClientLog;
 
     clvClientRealizeInit(&clientRealize, &settings);
     clvClientRealizeReInit(&clientRealize, &settings);

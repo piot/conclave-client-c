@@ -26,6 +26,7 @@ typedef struct ClvClientRealizeSettings {
     UdpTransportInOut transport;
     const char* username;
     struct ImprintAllocator* memory;
+    Clog log;
 } ClvClientRealizeSettings;
 
 typedef struct ClvClientRealize {

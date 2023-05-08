@@ -27,7 +27,7 @@ static int onRoomCreateResponse(ClvClient* self, FldInStream* inStream)
     self->mainRoomId = roomId;
     self->roomConnectionIndex = roomConnectionIndex;
 
-    CLOG_INFO("room create response. room id: %d connectionIndex: %d", roomId, roomConnectionIndex)
+    CLOG_C_INFO(&self->log, "room create response. room id: %d connectionIndex: %d", roomId, roomConnectionIndex)
 
     return 0;
 }
@@ -46,7 +46,7 @@ static int onRoomJoinResponse(ClvClient* self, FldInStream* inStream)
     self->mainRoomId = roomId;
     self->roomConnectionIndex = roomConnectionIndex;
 
-    CLOG_INFO("room join response. room id: %d. connection index %d", roomId, self->roomConnectionIndex)
+    CLOG_C_INFO(&self->log, "room join response. room id: %d. connection index %d", roomId, self->roomConnectionIndex)
 
     self->state = ClvClientStatePlaying;
 
@@ -60,10 +60,10 @@ static int onListRoomsResponse(ClvClient* self, FldInStream* inStream)
 {
     clvSerializeClientInListRoomsResponse(inStream, &self->listRoomsResponseOptions);
 
-    CLOG_INFO("got list of rooms back %zu", self->listRoomsResponseOptions.roomInfoCount);
+    CLOG_C_INFO(&self->log, "got list of rooms back %zu", self->listRoomsResponseOptions.roomInfoCount);
     for (size_t i = 0; i < self->listRoomsResponseOptions.roomInfoCount; ++i) {
         const ClvSerializeRoomInfo* roomInfo = &self->listRoomsResponseOptions.roomInfos[i];
-        CLOG_INFO(" %zu: %d '%s' '%s'", i, roomInfo->roomId, roomInfo->roomName, roomInfo->hostUserName)
+        CLOG_C_INFO(&self->log, " %zu: %d '%s' '%s'", i, roomInfo->roomId, roomInfo->roomName, roomInfo->hostUserName)
     }
 
     self->state = ClvClientStateListRoomDone;
@@ -79,7 +79,7 @@ static int onRoomReJoinResponse(ClvClient* self, FldInStream* inStream)
     uint8_t roomConnectionIndex;
     clvSerializeReadRoomConnectionIndex(inStream, &roomConnectionIndex);
 
-    CLOG_VERBOSE("rejoined room: %d %d", roomId, roomConnectionIndex)
+    CLOG_C_VERBOSE(&self->log, "rejoined room: %d %d", roomId, roomConnectionIndex)
 
     self->mainRoomId = roomId;
     self->roomConnectionIndex = roomConnectionIndex;
@@ -94,7 +94,7 @@ static int onLoginResponse(ClvClient* self, FldInStream* inStream)
     uint32_t sessionId;
     fldInStreamReadUInt32(inStream, &sessionId);
 
-    CLOG_INFO("Logged in as session %d", sessionId);
+    CLOG_C_INFO(&self->log, "Logged in as session %d", sessionId);
 
     self->mainUserSessionId = sessionId;
     self->state = ClvClientStateLoggedIn;
@@ -110,7 +110,7 @@ static int onIncomingPacket(ClvClient* self, FldInStream* inStream)
     fldInStreamReadUInt16(inStream, &octetCountInPacket);
 
     if (discoidBufferWriteAvailable(&self->inBuffer) < octetCountInPacket + 1 + 2) {
-        CLOG_NOTICE("dropping packets since in buffer is full")
+        CLOG_C_NOTICE(&self->log, "dropping packets since in buffer is full")
         return 0;
     }
 
@@ -131,7 +131,7 @@ static int clvClientFeed(ClvClient* self, const uint8_t* data, size_t len)
 
     uint8_t cmd;
     fldInStreamReadUInt8(&inStream, &cmd);
-    CLOG_INFO("clvClient: cmd: %s", clvSerializeCmdToString(cmd));
+    CLOG_C_INFO(&self->log, "cmd: %s", clvSerializeCmdToString(cmd));
     switch (data[0]) {
         case clvSerializeCmdRoomCreateResponse:
             return onRoomCreateResponse(self, &inStream);
@@ -147,7 +147,7 @@ static int clvClientFeed(ClvClient* self, const uint8_t* data, size_t len)
             return onIncomingPacket(self, &inStream);
             return -4;
         default:
-            CLOG_ERROR("unknown message %02X", cmd)
+            CLOG_C_ERROR(&self->log, "unknown message %02X", cmd)
             return -1;
     }
     return 0;

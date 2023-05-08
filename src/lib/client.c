@@ -12,9 +12,9 @@ void clvClientReInit(ClvClient* self, UdpTransportInOut* transport)
     self->state = ClvClientStateConnected;
 }
 
-int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, UdpTransportInOut* transport)
+int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, UdpTransportInOut* transport, Clog log)
 {
-    clogInitFromGlobal(&self->clog, "ClvClient");
+    self->log = log;
     self->name = 0;
     self->memory = memory;
     self->state = ClvClientStateConnected;

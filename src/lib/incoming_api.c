@@ -21,7 +21,7 @@ int clvClientInReadPacket(struct ClvClient* self, int* connectionId, uint8_t* oc
     *connectionId = fromConnectionId;
 
     if (octetCount < followingOctets) {
-        CLOG_SOFT_ERROR("can not read in buffer in clvClient")
+        CLOG_C_SOFT_ERROR(&self->log, "can not read incoming packet from circular buffer")
         discoidBufferSkip(&self->inBuffer, followingOctets);
         return -2;
     }

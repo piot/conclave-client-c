@@ -15,7 +15,7 @@ void clvClientRealizeInit(ClvClientRealize* self, const ClvClientRealizeSettings
     self->settings = *settings;
     self->settings.username = tc_str_dup(self->settings.username);
     self->isInRoom = false;
-    clvClientInit(&self->client, settings->memory, &self->settings.transport);
+    clvClientInit(&self->client, settings->memory, &self->settings.transport, settings->log);
 }
 
 void clvClientRealizeReInit(ClvClientRealize* self, const ClvClientRealizeSettings* settings)

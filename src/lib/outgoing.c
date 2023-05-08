@@ -10,7 +10,7 @@
 
 static int updateRoomCreate(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_INFO("creating room and game request '%s' (user session:%lu)", self->createRoomOptions.name,
+    CLOG_C_INFO(&self->log, "creating room and game request '%s' (user session:%lu)", self->createRoomOptions.name,
               self->mainUserSessionId)
     clvSerializeClientOutRoomCreate(stream, self->mainUserSessionId, &self->createRoomOptions);
     self->waitTime = 120;
@@ -20,7 +20,7 @@ static int updateRoomCreate(ClvClient* self, FldOutStream* stream)
 
 static int updateRoomJoin(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_INFO("creating join room request roomId:%d (user session:%lu)", self->joinRoomOptions.roomIdToJoin,
+    CLOG_C_INFO(&self->log, "creating join room request roomId:%d (user session:%lu)", self->joinRoomOptions.roomIdToJoin,
               self->mainUserSessionId)
     clvSerializeClientOutRoomJoin(stream, self->mainUserSessionId, &self->joinRoomOptions);
     self->waitTime = 120;
@@ -30,7 +30,7 @@ static int updateRoomJoin(ClvClient* self, FldOutStream* stream)
 
 static int updateListRooms(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_INFO("querying for rooms list %d, %d (user session:%lu)", self->listRoomsOptions.applicationId,
+    CLOG_C_INFO(&self->log, "querying for rooms list %d, %d (user session:%lu)", self->listRoomsOptions.applicationId,
               self->listRoomsOptions.maximumCount, self->mainUserSessionId)
     clvSerializeClientOutListRooms(stream, self->mainUserSessionId, &self->listRoomsOptions);
     self->waitTime = 120;
@@ -40,7 +40,7 @@ static int updateListRooms(ClvClient* self, FldOutStream* stream)
 
 static int updateRoomReJoin(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_INFO("trying to rejoin room %zu (participantIndex:%lu)", self->reJoinRoomOptions.roomId,
+    CLOG_C_INFO(&self->log, "trying to rejoin room %zu (participantIndex:%lu)", self->reJoinRoomOptions.roomId,
               self->reJoinRoomOptions.roomConnectionIndex)
 
     clvSerializeClientOutRoomReJoin(stream, &self->reJoinRoomOptions);
@@ -51,7 +51,7 @@ static int updateRoomReJoin(ClvClient* self, FldOutStream* stream)
 
 static int updateLogin(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_INFO("serialize login '%s'", self->name)
+    CLOG_C_INFO(&self->log,  "serialize login '%s'", self->name)
     clvSerializeClientOutLogin(stream, self->name);
     self->waitTime = 60;
 
@@ -81,7 +81,7 @@ static inline int handleStreamState(ClvClient* self, FldOutStream* outStream)
             break;
 
         default:
-            CLOG_ERROR("Unknown state %d", self->state)
+            CLOG_C_ERROR(&self->log, "Unknown state %d", self->state)
     }
 }
 
