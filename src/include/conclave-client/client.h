@@ -50,9 +50,9 @@ typedef struct ClvClient {
 
     uint8_t localPlayerIndex;
     ClvClientState state;
-    uint64_t mainUserSessionId;
-    uint64_t mainRoomId;
-    uint8_t roomConnectionIndex;
+    ClvSerializeUserSessionId mainUserSessionId;
+    ClvSerializeRoomId mainRoomId;
+    ClvSerializeRoomConnectionIndex roomConnectionIndex;
 
     UdpTransportInOut transport;
 

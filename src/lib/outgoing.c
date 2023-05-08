@@ -30,7 +30,7 @@ static int updateRoomJoin(ClvClient* self, FldOutStream* stream)
 
 static int updateListRooms(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_C_INFO(&self->log, "querying for rooms list %d, %d (user session:%lu)", self->listRoomsOptions.applicationId,
+    CLOG_C_INFO(&self->log, "querying for rooms list applicationId:%d, maxReplyCount:%d (user session:%lu)", self->listRoomsOptions.applicationId,
               self->listRoomsOptions.maximumCount, self->mainUserSessionId)
     clvSerializeClientOutListRooms(stream, self->mainUserSessionId, &self->listRoomsOptions);
     self->waitTime = 120;
@@ -135,10 +135,10 @@ int clvClientOutAddPacket(struct ClvClient* self, int toMemberIndex, const uint8
     FldOutStream outStream;
     fldOutStreamInit(&outStream, buf, UDP_MAX_SIZE);
     clvSerializeWriteCommand(&outStream, clvSerializeCmdPacket, "outaddpacket");
-    fldOutStreamWriteUInt32(&outStream, self->mainUserSessionId);
+    clvSerializeWriteUserSessionId(&outStream, self->mainUserSessionId);
     clvSerializeWriteRoomId(&outStream, self->mainRoomId);
-    fldOutStreamWriteUInt8(&outStream, self->roomConnectionIndex);
-    fldOutStreamWriteUInt8(&outStream, toMemberIndex);
+    clvSerializeWriteRoomConnectionIndex(&outStream, self->roomConnectionIndex);
+    clvSerializeWriteRoomConnectionIndex(&outStream, toMemberIndex);
     fldOutStreamWriteUInt16(&outStream, octetCount);
     fldOutStreamWriteOctets(&outStream, octets, octetCount);
     return self->transport.send(self->transport.self, outStream.octets, outStream.pos);

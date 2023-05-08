@@ -13,7 +13,7 @@
 
 static int onRoomCreateResponse(ClvClient* self, FldInStream* inStream)
 {
-    uint32_t roomId;
+    ClvSerializeRoomId roomId;
     clvSerializeReadRoomId(inStream, &roomId);
 
     uint8_t roomConnectionIndex;
@@ -34,7 +34,7 @@ static int onRoomCreateResponse(ClvClient* self, FldInStream* inStream)
 
 static int onRoomJoinResponse(ClvClient* self, FldInStream* inStream)
 {
-    uint32_t roomId;
+    ClvSerializeRoomId roomId;
     clvSerializeReadRoomId(inStream, &roomId);
 
     uint8_t roomConnectionIndex;
@@ -74,7 +74,7 @@ static int onListRoomsResponse(ClvClient* self, FldInStream* inStream)
 
 static int onRoomReJoinResponse(ClvClient* self, FldInStream* inStream)
 {
-    uint32_t roomId;
+    ClvSerializeRoomId roomId;
     clvSerializeReadRoomId(inStream, &roomId);
     uint8_t roomConnectionIndex;
     clvSerializeReadRoomConnectionIndex(inStream, &roomConnectionIndex);
@@ -91,8 +91,8 @@ static int onRoomReJoinResponse(ClvClient* self, FldInStream* inStream)
 
 static int onLoginResponse(ClvClient* self, FldInStream* inStream)
 {
-    uint32_t sessionId;
-    fldInStreamReadUInt32(inStream, &sessionId);
+    ClvSerializeUserSessionId sessionId;
+    clvSerializeReadUserSessionId(inStream, &sessionId);
 
     CLOG_C_INFO(&self->log, "Logged in as session %d", sessionId);
 
