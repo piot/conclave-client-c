@@ -4,12 +4,37 @@
  *--------------------------------------------------------------------------------------------*/
 #include <conclave-client/client.h>
 #include <conclave-client/incoming.h>
+#include <conclave-client/incoming_api.h>
 #include <conclave-client/outgoing.h>
 
 void clvClientReInit(ClvClient* self, UdpTransportInOut* transport)
 {
     self->transport = *transport;
     self->state = ClvClientStateConnected;
+}
+static int multiTransportSend(void* _self, int connectionIndex, const uint8_t* data, size_t size)
+{
+    ClvClient* self = (ClvClient*) _self;
+
+    CLOG_C_DEBUG(&self->log, "sending to relay: connection:%d octetCount:%d", connectionIndex, size)
+
+    return clvClientOutAddPacket(self, connectionIndex, data, size);
+}
+
+static int multiTransportReceive(void* _self, int* receivedFromConnectionIndex, uint8_t* data, size_t size)
+{
+    ClvClient* self = (ClvClient*) _self;
+
+
+    int octetCount = clvClientInReadPacket(self, receivedFromConnectionIndex, data, size);
+    if (octetCount < 0) {
+        CLOG_C_SOFT_ERROR(&self->log, "could not read in packet from clv")
+    }
+    if (octetCount > 0) {
+        CLOG_C_DEBUG(&self->log, "got packet from relay: connection:%d octetCount:%d", *receivedFromConnectionIndex, octetCount)
+    }
+
+    return octetCount;
 }
 
 int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, UdpTransportInOut* transport, Clog log)
@@ -20,6 +45,10 @@ int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, UdpTransport
     self->state = ClvClientStateConnected;
     self->transport = *transport;
     discoidBufferInit(&self->inBuffer, memory, 32 * 1024);
+
+    self->multiTransport.self = self;
+    self->multiTransport.send = multiTransportSend;
+    self->multiTransport.receive = multiTransportReceive;
 
     return 0;
 }

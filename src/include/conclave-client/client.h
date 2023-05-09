@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <udp-transport/udp_transport.h>
+#include <udp-transport/multi.h>
 
 struct ImprintAllocator;
 
@@ -60,6 +61,8 @@ typedef struct ClvClient {
 
     struct ImprintAllocator* memory;
     DiscoidBuffer inBuffer;
+
+    DatagramTransportMultiInOut multiTransport;
     Clog log;
 } ClvClient;
 

@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 #include <clog/clog.h>
 #include <conclave-client/client.h>
+#include <conclave-client/debug.h>
+#include <conclave-serialize/serialize.h>
 #include <conclave-client/outgoing.h>
-#include <conclave-serialize/debug.h>
 #include <flood/out_stream.h>
 
 static int updateRoomCreate(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_C_INFO(&self->log, "creating room and game request '%s' (user session:%lu)", self->createRoomOptions.name,
-              self->mainUserSessionId)
+    CLOG_C_INFO(&self->log, "creating room request '%s'", self->createRoomOptions.name)
     clvSerializeClientOutRoomCreate(stream, self->mainUserSessionId, &self->createRoomOptions);
     self->waitTime = 120;
 
@@ -20,8 +20,7 @@ static int updateRoomCreate(ClvClient* self, FldOutStream* stream)
 
 static int updateRoomJoin(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_C_INFO(&self->log, "creating join room request roomId:%d (user session:%lu)", self->joinRoomOptions.roomIdToJoin,
-              self->mainUserSessionId)
+    CLOG_C_INFO(&self->log, "creating join room request roomId:%d", self->joinRoomOptions.roomIdToJoin)
     clvSerializeClientOutRoomJoin(stream, self->mainUserSessionId, &self->joinRoomOptions);
     self->waitTime = 120;
 
@@ -30,8 +29,8 @@ static int updateRoomJoin(ClvClient* self, FldOutStream* stream)
 
 static int updateListRooms(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_C_INFO(&self->log, "querying for rooms list applicationId:%d, maxReplyCount:%d (user session:%lu)", self->listRoomsOptions.applicationId,
-              self->listRoomsOptions.maximumCount, self->mainUserSessionId)
+    CLOG_C_INFO(&self->log, "querying for rooms list applicationId:%d, maxReplyCount:%d",
+                self->listRoomsOptions.applicationId, self->listRoomsOptions.maximumCount)
     clvSerializeClientOutListRooms(stream, self->mainUserSessionId, &self->listRoomsOptions);
     self->waitTime = 120;
 
@@ -40,8 +39,8 @@ static int updateListRooms(ClvClient* self, FldOutStream* stream)
 
 static int updateRoomReJoin(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_C_INFO(&self->log, "trying to rejoin room %zu (participantIndex:%lu)", self->reJoinRoomOptions.roomId,
-              self->reJoinRoomOptions.roomConnectionIndex)
+    CLOG_C_INFO(&self->log, "trying to rejoin room %zu (roomConnectionIndex:%lu)", self->reJoinRoomOptions.roomId,
+                self->reJoinRoomOptions.roomConnectionIndex)
 
     clvSerializeClientOutRoomReJoin(stream, &self->reJoinRoomOptions);
     self->waitTime = 120;
@@ -51,15 +50,12 @@ static int updateRoomReJoin(ClvClient* self, FldOutStream* stream)
 
 static int updateLogin(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_C_INFO(&self->log,  "serialize login '%s'", self->name)
+    CLOG_C_INFO(&self->log, "serialize login '%s'", self->name)
     clvSerializeClientOutLogin(stream, self->name);
     self->waitTime = 60;
 
     return 0;
 }
-
-#include <conclave-client/debug.h>
-#include <conclave-serialize/serialize.h>
 
 static inline int handleStreamState(ClvClient* self, FldOutStream* outStream)
 {
@@ -141,5 +137,7 @@ int clvClientOutAddPacket(struct ClvClient* self, int toMemberIndex, const uint8
     clvSerializeWriteRoomConnectionIndex(&outStream, toMemberIndex);
     fldOutStreamWriteUInt16(&outStream, octetCount);
     fldOutStreamWriteOctets(&outStream, octets, octetCount);
+
+    CLOG_C_DEBUG(&self->log, "sending on to relay for member %02X", toMemberIndex)
     return self->transport.send(self->transport.self, outStream.octets, outStream.pos);
 }
