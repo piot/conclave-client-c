@@ -10,6 +10,8 @@
 static const char* stateToString(ClvClientState state)
 {
     switch (state) {
+        case ClvClientStateChallenge:
+            return "challenge";
         case ClvClientStateLogin:
             return "login";
         case ClvClientStateIdle:

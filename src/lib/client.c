@@ -6,6 +6,7 @@
 #include <conclave-client/incoming.h>
 #include <conclave-client/incoming_api.h>
 #include <conclave-client/outgoing.h>
+#include <secure-random/secure_random.h>
 
 void clvClientReInit(ClvClient* self, UdpTransportInOut* transport)
 {
@@ -25,13 +26,13 @@ static int multiTransportReceive(void* _self, int* receivedFromConnectionIndex, 
 {
     ClvClient* self = (ClvClient*) _self;
 
-
     int octetCount = clvClientInReadPacket(self, receivedFromConnectionIndex, data, size);
     if (octetCount < 0) {
         CLOG_C_SOFT_ERROR(&self->log, "could not read in packet from clv")
     }
     if (octetCount > 0) {
-        CLOG_C_DEBUG(&self->log, "got packet from relay: connection:%d octetCount:%d", *receivedFromConnectionIndex, octetCount)
+        CLOG_C_DEBUG(&self->log, "got packet from relay: connection:%d octetCount:%d", *receivedFromConnectionIndex,
+                     octetCount)
     }
 
     return octetCount;
@@ -44,6 +45,7 @@ int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, UdpTransport
     self->memory = memory;
     self->state = ClvClientStateConnected;
     self->transport = *transport;
+    self->nonce = secureRandomUInt64();
     discoidBufferInit(&self->inBuffer, memory, 32 * 1024);
 
     self->multiTransport.self = self;

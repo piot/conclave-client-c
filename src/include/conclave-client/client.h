@@ -24,6 +24,7 @@ typedef enum ClvClientState {
     ClvClientStateIdle,
     ClvClientStateConnecting,
     ClvClientStateConnected,
+    ClvClientStateChallenge,
     ClvClientStateLogin,
     ClvClientStateLoggedIn,
     ClvClientStateRoomCreate,
@@ -54,8 +55,9 @@ typedef struct ClvClient {
     ClvSerializeUserSessionId mainUserSessionId;
     ClvSerializeRoomId mainRoomId;
     ClvSerializeRoomConnectionIndex roomConnectionIndex;
-
+    ClvSerializeClientNonce nonce;
     UdpTransportInOut transport;
+    ClvSerializeServerChallenge serverChallenge;
 
     size_t frame;
 

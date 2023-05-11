@@ -9,6 +9,4 @@ struct ClvClient;
 
 int clvClientReceiveAllInUdpBuffer(struct ClvClient* self);
 
-
-
 #endif

@@ -65,5 +65,6 @@ target_include_directories(conclave_client
         PUBLIC ${DEPS}piot/udp-transport/src/include)
 target_include_directories(conclave_client
         PUBLIC ${DEPS}piot/discoid-c/src/include)
-
+target_include_directories(conclave_client
+        PUBLIC ${DEPS}piot/secure-random-c/src/include)
 target_include_directories(conclave_client PUBLIC ../include)

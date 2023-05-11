@@ -8,7 +8,7 @@
 int clvClientLogin(ClvClient* self, const char* name)
 {
     self->name = tc_str_dup(name);
-    self->state = ClvClientStateLogin;
+    self->state = ClvClientStateChallenge;
     self->waitTime = 0;
 
     return 0;

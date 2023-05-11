@@ -183,6 +183,7 @@ void clvClientRealizeUpdate(ClvClientRealize* self, MonotonicTimeMs now)
     }
 
     switch (self->targetState) {
+
         case ClvClientRealizeStateCreateRoom:
             tryCreateRoom(self);
             break;

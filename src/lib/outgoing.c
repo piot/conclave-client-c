@@ -5,8 +5,8 @@
 #include <clog/clog.h>
 #include <conclave-client/client.h>
 #include <conclave-client/debug.h>
-#include <conclave-serialize/serialize.h>
 #include <conclave-client/outgoing.h>
+#include <conclave-serialize/serialize.h>
 #include <flood/out_stream.h>
 
 static int updateRoomCreate(ClvClient* self, FldOutStream* stream)
@@ -51,7 +51,16 @@ static int updateRoomReJoin(ClvClient* self, FldOutStream* stream)
 static int updateLogin(ClvClient* self, FldOutStream* stream)
 {
     CLOG_C_INFO(&self->log, "serialize login '%s'", self->name)
-    clvSerializeClientOutLogin(stream, self->name);
+    clvSerializeClientOutLogin(stream, self->nonce, self->serverChallenge, self->name);
+    self->waitTime = 60;
+
+    return 0;
+}
+
+static int updateChallenge(ClvClient* self, FldOutStream* stream)
+{
+    CLOG_C_INFO(&self->log, "serialize challenge '%s'", self->name)
+    clvSerializeClientOutChallenge(stream, self->nonce);
     self->waitTime = 60;
 
     return 0;
@@ -60,6 +69,9 @@ static int updateLogin(ClvClient* self, FldOutStream* stream)
 static inline int handleStreamState(ClvClient* self, FldOutStream* outStream)
 {
     switch (self->state) {
+        case ClvClientStateChallenge:
+            return updateChallenge(self, outStream);
+            break;
         case ClvClientStateLogin:
             return updateLogin(self, outStream);
             break;
@@ -109,7 +121,6 @@ static inline int handleState(ClvClient* self, MonotonicTimeMs now, UdpTransport
 
 int clvClientOutgoing(ClvClient* self, MonotonicTimeMs now, UdpTransportOut* transportOut)
 {
-    int errorCode;
     if (self->state != ClvClientStatePlaying) {
         clvClientDebugOutput(self);
     }
@@ -138,6 +149,5 @@ int clvClientOutAddPacket(struct ClvClient* self, int toMemberIndex, const uint8
     fldOutStreamWriteUInt16(&outStream, octetCount);
     fldOutStreamWriteOctets(&outStream, octets, octetCount);
 
-    CLOG_C_DEBUG(&self->log, "sending on to relay for member %02X", toMemberIndex)
     return self->transport.send(self->transport.self, outStream.octets, outStream.pos);
 }

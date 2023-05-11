@@ -27,6 +27,11 @@ version = "*"
 name = 'piot/discoid-c'
 version = "*"
 
+[[dependencies]]
+name = 'piot/secure-random-c'
+version = "*"
+
+
 [[development]]
 name = 'piot/udp-client-c'
 version = "*"

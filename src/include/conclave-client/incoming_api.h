@@ -13,5 +13,4 @@ struct ClvClient;
 
 int clvClientInReadPacket(struct ClvClient* self, int* connectionId, uint8_t* octets, size_t octetCount);
 
-
 #endif

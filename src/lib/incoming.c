@@ -89,14 +89,34 @@ static int onRoomReJoinResponse(ClvClient* self, FldInStream* inStream)
     return 0;
 }
 
+static int onChallengeResponse(ClvClient* self, FldInStream* inStream)
+{
+    ClvSerializeClientNonce clientNonce;
+    ClvSerializeServerChallenge serverChallenge;
+    clvSerializeClientInChallenge(inStream, &clientNonce, &serverChallenge);
+
+    CLOG_C_INFO(&self->log, "got challenge from server %016lX", serverChallenge);
+
+    self->serverChallenge = serverChallenge;
+    self->state = ClvClientStateLogin;
+
+    return 0;
+}
+
 static int onLoginResponse(ClvClient* self, FldInStream* inStream)
 {
-    ClvSerializeUserSessionId sessionId;
-    clvSerializeReadUserSessionId(inStream, &sessionId);
+    ClvSerializeClientNonce toClientNonce;
+    ClvSerializeUserSessionId userSessionId;
 
-    CLOG_C_INFO(&self->log, "Logged in as session %d", sessionId);
+    clvSerializeClientInLogin(inStream, &toClientNonce, &userSessionId);
 
-    self->mainUserSessionId = sessionId;
+    if (toClientNonce != self->nonce) {
+        return 0;
+    }
+
+    CLOG_C_INFO(&self->log, "Logged in as session %d", userSessionId);
+
+    self->mainUserSessionId = userSessionId;
     self->state = ClvClientStateLoggedIn;
 
     return 0;
@@ -131,7 +151,7 @@ static int clvClientFeed(ClvClient* self, const uint8_t* data, size_t len)
 
     uint8_t cmd;
     fldInStreamReadUInt8(&inStream, &cmd);
-    CLOG_C_INFO(&self->log, "cmd: %s", clvSerializeCmdToString(cmd));
+    // CLOG_C_VERBOSE(&self->log, "cmd: %s", clvSerializeCmdToString(cmd));
     switch (data[0]) {
         case clvSerializeCmdRoomCreateResponse:
             return onRoomCreateResponse(self, &inStream);
@@ -141,6 +161,8 @@ static int clvClientFeed(ClvClient* self, const uint8_t* data, size_t len)
             return onRoomReJoinResponse(self, &inStream);
         case clvSerializeCmdListRoomsResponse:
             return onListRoomsResponse(self, &inStream);
+        case clvSerializeCmdChallengeResponse:
+            return onChallengeResponse(self, &inStream);
         case clvSerializeCmdLoginResponse:
             return onLoginResponse(self, &inStream);
         case clvSerializeCmdPacketToClient:
