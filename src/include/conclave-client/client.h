@@ -8,13 +8,13 @@
 #include <clog/clog.h>
 #include <conclave-client/outgoing_api.h>
 #include <conclave-serialize/client_out.h>
+#include <datagram-transport/multi.h>
+#include <datagram-transport/transport.h>
 #include <discoid/circular_buffer.h>
 #include <monotonic-time/monotonic_time.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <udp-transport/udp_transport.h>
-#include <udp-transport/multi.h>
 
 struct ImprintAllocator;
 
@@ -56,7 +56,7 @@ typedef struct ClvClient {
     ClvSerializeRoomId mainRoomId;
     ClvSerializeRoomConnectionIndex roomConnectionIndex;
     ClvSerializeClientNonce nonce;
-    UdpTransportInOut transport;
+    DatagramTransport transport;
     ClvSerializeServerChallenge serverChallenge;
 
     size_t frame;
@@ -64,13 +64,13 @@ typedef struct ClvClient {
     struct ImprintAllocator* memory;
     DiscoidBuffer inBuffer;
 
-    DatagramTransportMultiInOut multiTransport;
+    DatagramTransportMulti multiTransport;
     Clog log;
 } ClvClient;
 
-int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, UdpTransportInOut* transport, Clog log);
+int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, DatagramTransport* transport, Clog log);
 void clvClientReset(ClvClient* self);
-void clvClientReInit(ClvClient* self, UdpTransportInOut* transport);
+void clvClientReInit(ClvClient* self, DatagramTransport* transport);
 void clvClientDestroy(ClvClient* self);
 void clvClientDisconnect(ClvClient* self);
 int clvClientUpdate(ClvClient* self, MonotonicTimeMs now);

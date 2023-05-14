@@ -14,7 +14,7 @@
 
 clog_config g_clog;
 
-static int clientReceive(void* _self, uint8_t* data, size_t size)
+static ssize_t clientReceive(void* _self, uint8_t* data, size_t size)
 {
     UdpClientSocket* self = _self;
 
@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
 
     ImprintDefaultSetup memory;
 
-    UdpTransportInOut transportInOut;
+    DatagramTransport transportInOut;
 
     imprintDefaultSetupInit(&memory, 16 * 1024 * 1024);
 

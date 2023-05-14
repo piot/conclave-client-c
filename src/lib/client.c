@@ -8,7 +8,7 @@
 #include <conclave-client/outgoing.h>
 #include <secure-random/secure_random.h>
 
-void clvClientReInit(ClvClient* self, UdpTransportInOut* transport)
+void clvClientReInit(ClvClient* self, DatagramTransport* transport)
 {
     self->transport = *transport;
     self->state = ClvClientStateConnected;
@@ -38,7 +38,7 @@ static int multiTransportReceive(void* _self, int* receivedFromConnectionIndex, 
     return octetCount;
 }
 
-int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, UdpTransportInOut* transport, Clog log)
+int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, DatagramTransport* transport, Clog log)
 {
     self->log = log;
     self->name = 0;
@@ -49,8 +49,8 @@ int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, UdpTransport
     discoidBufferInit(&self->inBuffer, memory, 32 * 1024);
 
     self->multiTransport.self = self;
-    self->multiTransport.send = multiTransportSend;
-    self->multiTransport.receive = multiTransportReceive;
+    self->multiTransport.sendTo = multiTransportSend;
+    self->multiTransport.receiveFrom = multiTransportReceive;
 
     return 0;
 }
@@ -65,7 +65,7 @@ void clvClientDisconnect(ClvClient* self)
 
 static int sendPackets(ClvClient* self, MonotonicTimeMs now)
 {
-    UdpTransportOut transportOut;
+    DatagramTransportOut transportOut;
     transportOut.self = self->transport.self;
     transportOut.send = self->transport.send;
 

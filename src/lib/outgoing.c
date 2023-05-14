@@ -93,7 +93,7 @@ static inline int handleStreamState(ClvClient* self, FldOutStream* outStream)
     }
 }
 
-static inline int handleState(ClvClient* self, MonotonicTimeMs now, UdpTransportOut* transportOut)
+static inline int handleState(ClvClient* self, MonotonicTimeMs now, DatagramTransportOut* transportOut)
 {
 #define UDP_MAX_SIZE (1200)
     static uint8_t buf[UDP_MAX_SIZE];
@@ -112,14 +112,16 @@ static inline int handleState(ClvClient* self, MonotonicTimeMs now, UdpTransport
             fldOutStreamInit(&outStream, buf, UDP_MAX_SIZE);
             int result = handleStreamState(self, &outStream);
             if (result < 0) {
+                CLOG_SOFT_ERROR("couldnt send it")
                 return result;
             }
+            CLOG_C_VERBOSE(&self->log, "sending packet %d octets", outStream.pos)
             return transportOut->send(transportOut->self, outStream.octets, outStream.pos);
         }
     }
 }
 
-int clvClientOutgoing(ClvClient* self, MonotonicTimeMs now, UdpTransportOut* transportOut)
+int clvClientOutgoing(ClvClient* self, MonotonicTimeMs now, DatagramTransportOut* transportOut)
 {
     if (self->state != ClvClientStatePlaying) {
         clvClientDebugOutput(self);

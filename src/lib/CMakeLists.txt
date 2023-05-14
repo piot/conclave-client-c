@@ -62,7 +62,7 @@ target_include_directories(conclave_client
 target_include_directories(conclave_client
         PUBLIC ${DEPS}piot/monotonic-time-c/src/include)
 target_include_directories(conclave_client
-        PUBLIC ${DEPS}piot/udp-transport/src/include)
+        PUBLIC ${DEPS}piot/datagram-transport-c/src/include)
 target_include_directories(conclave_client
         PUBLIC ${DEPS}piot/discoid-c/src/include)
 target_include_directories(conclave_client

@@ -23,7 +23,7 @@ typedef enum ClvClientRealizeState {
 } ClvClientRealizeState;
 
 typedef struct ClvClientRealizeSettings {
-    UdpTransportInOut transport;
+    DatagramTransport transport;
     const char* username;
     struct ImprintAllocator* memory;
     Clog log;
