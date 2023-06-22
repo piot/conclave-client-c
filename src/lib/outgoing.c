@@ -29,7 +29,7 @@ static int updateRoomJoin(ClvClient* self, FldOutStream* stream)
 
 static int updateListRooms(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_C_INFO(&self->log, "querying for rooms list applicationId:%d, maxReplyCount:%d",
+    CLOG_C_INFO(&self->log, "querying for rooms list applicationId:%"PRIu64", maxReplyCount:%d",
                 self->listRoomsOptions.applicationId, self->listRoomsOptions.maximumCount)
     clvSerializeClientOutListRooms(stream, self->mainUserSessionId, &self->listRoomsOptions);
     self->waitTime = 120;
@@ -39,7 +39,7 @@ static int updateListRooms(ClvClient* self, FldOutStream* stream)
 
 static int updateRoomReJoin(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_C_INFO(&self->log, "trying to rejoin room %zu (roomConnectionIndex:%lu)", self->reJoinRoomOptions.roomId,
+    CLOG_C_INFO(&self->log, "trying to rejoin room %"PRIu64" (roomConnectionIndex:%"PRIu8")", self->reJoinRoomOptions.roomId,
                 self->reJoinRoomOptions.roomConnectionIndex)
 
     clvSerializeClientOutRoomReJoin(stream, &self->reJoinRoomOptions);
@@ -115,7 +115,7 @@ static inline int handleState(ClvClient* self, MonotonicTimeMs now, DatagramTran
                 CLOG_SOFT_ERROR("couldnt send it")
                 return result;
             }
-            CLOG_C_VERBOSE(&self->log, "sending packet %d octets", outStream.pos)
+            CLOG_C_VERBOSE(&self->log, "sending packet %zu octets", outStream.pos)
             return transportOut->send(transportOut->self, outStream.octets, outStream.pos);
         }
     }

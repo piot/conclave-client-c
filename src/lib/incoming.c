@@ -95,7 +95,7 @@ static int onChallengeResponse(ClvClient* self, FldInStream* inStream)
     ClvSerializeServerChallenge serverChallenge;
     clvSerializeClientInChallenge(inStream, &clientNonce, &serverChallenge);
 
-    CLOG_C_INFO(&self->log, "got challenge from server %016lX", serverChallenge);
+    CLOG_C_INFO(&self->log, "got challenge from server %016"PRIX64, serverChallenge);
 
     self->serverChallenge = serverChallenge;
     self->state = ClvClientStateLogin;
@@ -114,7 +114,7 @@ static int onLoginResponse(ClvClient* self, FldInStream* inStream)
         return 0;
     }
 
-    CLOG_C_INFO(&self->log, "Logged in as session %d", userSessionId);
+    CLOG_C_INFO(&self->log, "Logged in as session %"PRIu64, userSessionId);
 
     self->mainUserSessionId = userSessionId;
     self->state = ClvClientStateLoggedIn;
