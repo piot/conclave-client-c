@@ -17,7 +17,7 @@ static int multiTransportSend(void* _self, int connectionIndex, const uint8_t* d
 {
     ClvClient* self = (ClvClient*) _self;
 
-    CLOG_C_DEBUG(&self->log, "sending to relay: connection:%d octetCount:%d", connectionIndex, size)
+    CLOG_C_DEBUG(&self->log, "sending to relay: connection:%d octetCount:%zu", connectionIndex, size)
 
     return clvClientOutAddPacket(self, connectionIndex, data, size);
 }
