@@ -89,6 +89,12 @@ static void tryConnectAndLogin(ClvClientRealize* self)
             break;
         case ClvClientStatePlaying:
             break;
+        case ClvClientStateChallenge:
+            break;
+        case ClvClientStateListRooms:
+            break;
+        case ClvClientStateListRoomDone:
+            break;
     }
 }
 
@@ -116,6 +122,12 @@ static void tryCreateRoom(ClvClientRealize* self)
         case ClvClientStateRoomJoin:
             break;
         case ClvClientStateRoomReJoin:
+            break;
+        case ClvClientStateChallenge:
+            break;
+        case ClvClientStateListRooms:
+            break;
+        case ClvClientStateListRoomDone:
             break;
     }
 }
@@ -146,6 +158,10 @@ static void tryJoinRoom(ClvClientRealize* self)
             break;
         case ClvClientStateRoomReJoin:
             break;
+        case ClvClientStateChallenge:
+            break;
+        case ClvClientStateListRooms:
+            break;
     }
 }
 
@@ -172,6 +188,12 @@ static void tryListRooms(ClvClientRealize* self)
         case ClvClientStateRoomJoin:
             break;
         case ClvClientStateRoomReJoin:
+            break;
+        case ClvClientStateChallenge:
+            break;
+        case ClvClientStateListRooms:
+            break;
+        case ClvClientStatePlaying:
             break;
     }
 }

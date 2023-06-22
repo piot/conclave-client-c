@@ -8,6 +8,7 @@
 #include <conclave-client/outgoing.h>
 #include <conclave-serialize/serialize.h>
 #include <flood/out_stream.h>
+#include <inttypes.h>
 
 static int updateRoomCreate(ClvClient* self, FldOutStream* stream)
 {
@@ -29,7 +30,7 @@ static int updateRoomJoin(ClvClient* self, FldOutStream* stream)
 
 static int updateListRooms(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_C_INFO(&self->log, "querying for rooms list applicationId:%d, maxReplyCount:%d",
+    CLOG_C_INFO(&self->log, "querying for rooms list applicationId:%" PRIX64 " maxReplyCount:%d",
                 self->listRoomsOptions.applicationId, self->listRoomsOptions.maximumCount)
     clvSerializeClientOutListRooms(stream, self->mainUserSessionId, &self->listRoomsOptions);
     self->waitTime = 120;
@@ -39,7 +40,7 @@ static int updateListRooms(ClvClient* self, FldOutStream* stream)
 
 static int updateRoomReJoin(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_C_INFO(&self->log, "trying to rejoin room %zu (roomConnectionIndex:%lu)", self->reJoinRoomOptions.roomId,
+    CLOG_C_INFO(&self->log, "trying to rejoin room %" PRIX64 " (roomConnectionIndex:%hhu)", self->reJoinRoomOptions.roomId,
                 self->reJoinRoomOptions.roomConnectionIndex)
 
     clvSerializeClientOutRoomReJoin(stream, &self->reJoinRoomOptions);
@@ -115,7 +116,7 @@ static inline int handleState(ClvClient* self, MonotonicTimeMs now, DatagramTran
                 CLOG_SOFT_ERROR("couldnt send it")
                 return result;
             }
-            CLOG_C_VERBOSE(&self->log, "sending packet %d octets", outStream.pos)
+            CLOG_C_VERBOSE(&self->log, "sending packet %zu octets", outStream.pos)
             return transportOut->send(transportOut->self, outStream.octets, outStream.pos);
         }
     }
