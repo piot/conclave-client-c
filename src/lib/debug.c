@@ -5,7 +5,7 @@
 #include <conclave-client/client.h>
 #include <conclave-client/debug.h>
 
-#if CONFIGURATION_DEBUG
+#if CLOG_LOG_ENABLED
 
 static const char* stateToString(ClvClientState state)
 {
