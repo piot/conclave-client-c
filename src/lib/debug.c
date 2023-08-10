@@ -5,7 +5,7 @@
 #include <conclave-client/client.h>
 #include <conclave-client/debug.h>
 
-#if CONFIGURATION_DEBUG
+#if 0
 
 static const char* stateToString(ClvClientState state)
 {
@@ -43,5 +43,7 @@ static const char* stateToString(ClvClientState state)
 
 void clvClientDebugOutput(const ClvClient* self)
 {
+#if 0
     CLOG_C_INFO(&self->log, "state: %s", stateToString(self->state))
+#endif
 }
