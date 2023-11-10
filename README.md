@@ -1,8 +1,13 @@
+<div align="center">
+    <img src="https://github.com/piot/conclave/raw/main/docs/images/logo.svg" width="192" />
+</div>
+
 # Conclave Client
 
 Connects to a [Conclave Server](https://github.com/piot/conclave-server-lib) using the [Conclave Protocol](https://github.com/piot/conclave-serialize-c).
 
-> :warning: This library is used for testing purposes, do not use in production!
+> [!IMPORTANT]
+> Designed for internal development and testing, do not use in production.
 
 ## Usage
 
