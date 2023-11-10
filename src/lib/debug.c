@@ -5,45 +5,40 @@
 #include <conclave-client/client.h>
 #include <conclave-client/debug.h>
 
-#if 0
+#if defined CLOG_LOG_ENABLED
 
 static const char* stateToString(ClvClientState state)
 {
     switch (state) {
-        case ClvClientStateChallenge:
-            return "challenge";
-        case ClvClientStateLogin:
-            return "login";
-        case ClvClientStateIdle:
-            return "idle";
-        case ClvClientStateLoggedIn:
-            return "logged in";
-        case ClvClientStateRoomCreate:
-            return "room create";
-        case ClvClientStatePlaying:
-            return "playing the game";
-        case ClvClientStateRoomReJoin:
-            return "room rejoin";
-        case ClvClientStateConnecting:
-            return "connecting";
-        case ClvClientStateConnected:
-            return "connected";
-        case ClvClientStateRoomJoin:
-            return "room join";
-        case ClvClientStateListRooms:
-            return "trying to list rooms";
-        case ClvClientStateListRoomDone:
-            return "list rooms complete";
+    case ClvClientStateLogin:
+        return "login";
+    case ClvClientStateIdle:
+        return "idle";
+    case ClvClientStateLoggedIn:
+        return "logged in";
+    case ClvClientStateRoomCreate:
+        return "room create";
+    case ClvClientStatePlaying:
+        return "playing the game";
+    case ClvClientStateRoomReJoin:
+        return "room rejoin";
+    case ClvClientStateConnecting:
+        return "connecting";
+    case ClvClientStateConnected:
+        return "connected";
+    case ClvClientStateRoomJoin:
+        return "room join";
+    case ClvClientStateListRooms:
+        return "trying to list rooms";
+    case ClvClientStateListRoomDone:
+        return "list rooms complete";
     }
 
     return "unknown";
 }
 
-#endif
-
 void clvClientDebugOutput(const ClvClient* self)
 {
-#if 0
     CLOG_C_INFO(&self->log, "state: %s", stateToString(self->state))
-#endif
 }
+#endif

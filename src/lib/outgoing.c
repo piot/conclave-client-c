@@ -21,7 +21,8 @@ static int updateRoomCreate(ClvClient* self, FldOutStream* stream)
 
 static int updateRoomJoin(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_C_INFO(&self->log, "creating join room request roomId:%d", self->joinRoomOptions.roomIdToJoin)
+    CLOG_C_INFO(
+        &self->log, "creating join room request roomId:%d", self->joinRoomOptions.roomIdToJoin)
     clvSerializeClientOutRoomJoin(stream, self->mainUserSessionId, &self->joinRoomOptions);
     self->waitTime = 120;
 
@@ -31,7 +32,7 @@ static int updateRoomJoin(ClvClient* self, FldOutStream* stream)
 static int updateListRooms(ClvClient* self, FldOutStream* stream)
 {
     CLOG_C_INFO(&self->log, "querying for rooms list applicationId:%" PRIX64 " maxReplyCount:%d",
-                self->listRoomsOptions.applicationId, self->listRoomsOptions.maximumCount)
+        self->listRoomsOptions.applicationId, self->listRoomsOptions.maximumCount)
     clvSerializeClientOutListRooms(stream, self->mainUserSessionId, &self->listRoomsOptions);
     self->waitTime = 120;
 
@@ -40,8 +41,8 @@ static int updateListRooms(ClvClient* self, FldOutStream* stream)
 
 static int updateRoomReJoin(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_C_INFO(&self->log, "trying to rejoin room %" PRIX64 " (roomConnectionIndex:%hhu)", self->reJoinRoomOptions.roomId,
-                self->reJoinRoomOptions.roomConnectionIndex)
+    CLOG_C_INFO(&self->log, "trying to rejoin room %d (roomConnectionIndex:%hhu)",
+        self->reJoinRoomOptions.roomId, self->reJoinRoomOptions.roomConnectionIndex)
 
     clvSerializeClientOutRoomReJoin(stream, &self->reJoinRoomOptions);
     self->waitTime = 120;
@@ -52,16 +53,7 @@ static int updateRoomReJoin(ClvClient* self, FldOutStream* stream)
 static int updateLogin(ClvClient* self, FldOutStream* stream)
 {
     CLOG_C_INFO(&self->log, "serialize login '%s'", self->name)
-    clvSerializeClientOutLogin(stream, self->nonce, self->serverChallenge, self->name);
-    self->waitTime = 60;
-
-    return 0;
-}
-
-static int updateChallenge(ClvClient* self, FldOutStream* stream)
-{
-    CLOG_C_INFO(&self->log, "serialize challenge '%s'", self->name)
-    clvSerializeClientOutChallenge(stream, self->nonce);
+    clvSerializeClientOutLogin(stream, self->nonce, self->mainUserSessionId);
     self->waitTime = 60;
 
     return 0;
@@ -70,55 +62,59 @@ static int updateChallenge(ClvClient* self, FldOutStream* stream)
 static inline int handleStreamState(ClvClient* self, FldOutStream* outStream)
 {
     switch (self->state) {
-        case ClvClientStateChallenge:
-            return updateChallenge(self, outStream);
-            break;
-        case ClvClientStateLogin:
-            return updateLogin(self, outStream);
-            break;
-        case ClvClientStateRoomCreate:
-            return updateRoomCreate(self, outStream);
-            break;
-        case ClvClientStateRoomJoin:
-            return updateRoomJoin(self, outStream);
-            break;
-        case ClvClientStateRoomReJoin:
-            return updateRoomReJoin(self, outStream);
-            break;
-        case ClvClientStateListRooms:
-            return updateListRooms(self, outStream);
-            break;
-
-        default:
-            CLOG_C_ERROR(&self->log, "Unknown state %d", self->state)
+    case ClvClientStateLogin:
+        return updateLogin(self, outStream);
+    case ClvClientStateRoomCreate:
+        return updateRoomCreate(self, outStream);
+    case ClvClientStateRoomJoin:
+        return updateRoomJoin(self, outStream);
+    case ClvClientStateRoomReJoin:
+        return updateRoomReJoin(self, outStream);
+    case ClvClientStateListRooms:
+        return updateListRooms(self, outStream);
+    case ClvClientStateIdle:
+    case ClvClientStateConnecting:
+    case ClvClientStateConnected:
+    case ClvClientStateLoggedIn:
+    case ClvClientStateListRoomDone:
+    case ClvClientStatePlaying:
+        break;
     }
+    return 0;
 }
 
-static inline int handleState(ClvClient* self, MonotonicTimeMs now, DatagramTransportOut* transportOut)
+static inline int handleState(
+    ClvClient* self, MonotonicTimeMs now, DatagramTransportOut* transportOut)
 {
+    (void) now; // TODO: use rate limiting
+
 #define UDP_MAX_SIZE (1200)
     static uint8_t buf[UDP_MAX_SIZE];
 
     switch (self->state) {
-        case ClvClientStateIdle:
-        case ClvClientStateLoggedIn:
-        case ClvClientStateConnected:
-        case ClvClientStatePlaying:
-        case ClvClientStateListRoomDone:
-            return 0;
-            break;
+    case ClvClientStateIdle:
+    case ClvClientStateLoggedIn:
+    case ClvClientStateConnected:
+    case ClvClientStatePlaying:
+    case ClvClientStateListRoomDone:
+    case ClvClientStateConnecting:
+        return 0;
 
-        default: {
-            FldOutStream outStream;
-            fldOutStreamInit(&outStream, buf, UDP_MAX_SIZE);
-            int result = handleStreamState(self, &outStream);
-            if (result < 0) {
-                CLOG_SOFT_ERROR("couldnt send it")
-                return result;
-            }
-            CLOG_C_VERBOSE(&self->log, "sending packet %zu octets", outStream.pos)
-            return transportOut->send(transportOut->self, outStream.octets, outStream.pos);
+    case ClvClientStateLogin:
+    case ClvClientStateRoomCreate:
+    case ClvClientStateRoomJoin:
+    case ClvClientStateRoomReJoin:
+    case ClvClientStateListRooms: {
+        FldOutStream outStream;
+        fldOutStreamInit(&outStream, buf, UDP_MAX_SIZE);
+        int result = handleStreamState(self, &outStream);
+        if (result < 0) {
+            CLOG_SOFT_ERROR("couldnt send it")
+            return result;
         }
+        CLOG_C_VERBOSE(&self->log, "sending packet %zu octets", outStream.pos)
+        return transportOut->send(transportOut->self, outStream.octets, outStream.pos);
+    }
     }
 }
 
@@ -136,21 +132,4 @@ int clvClientOutgoing(ClvClient* self, MonotonicTimeMs now, DatagramTransportOut
     self->frame++;
 
     return 0;
-}
-
-int clvClientOutAddPacket(struct ClvClient* self, int toMemberIndex, const uint8_t* octets, size_t octetCount)
-{
-#define UDP_MAX_SIZE (1200)
-    static uint8_t buf[UDP_MAX_SIZE];
-    FldOutStream outStream;
-    fldOutStreamInit(&outStream, buf, UDP_MAX_SIZE);
-    clvSerializeWriteCommand(&outStream, clvSerializeCmdPacket, "outaddpacket");
-    clvSerializeWriteUserSessionId(&outStream, self->mainUserSessionId);
-    clvSerializeWriteRoomId(&outStream, self->mainRoomId);
-    clvSerializeWriteRoomConnectionIndex(&outStream, self->roomConnectionIndex);
-    clvSerializeWriteRoomConnectionIndex(&outStream, toMemberIndex);
-    fldOutStreamWriteUInt16(&outStream, octetCount);
-    fldOutStreamWriteOctets(&outStream, octets, octetCount);
-
-    return self->transport.send(self->transport.self, outStream.octets, outStream.pos);
 }

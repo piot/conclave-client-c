@@ -11,6 +11,6 @@ struct DatagramTransportOut;
 #include <monotonic-time/monotonic_time.h>
 
 int clvClientOutgoing(struct ClvClient* self, MonotonicTimeMs now, struct DatagramTransportOut* transportOut);
-int clvClientOutAddPacket(struct ClvClient* self, int toMemberId, const uint8_t* octets, size_t octetCount);
+
 
 #endif

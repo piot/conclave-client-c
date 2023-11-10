@@ -24,7 +24,7 @@ typedef enum ClvClientRealizeState {
 
 typedef struct ClvClientRealizeSettings {
     DatagramTransport transport;
-    const char* username;
+    char* username;
     struct ImprintAllocator* memory;
     Clog log;
 } ClvClientRealizeSettings;
@@ -48,11 +48,11 @@ void clvClientRealizeReInit(ClvClientRealize* self, const ClvClientRealizeSettin
 void clvClientRealizeDestroy(ClvClientRealize* self);
 void clvClientRealizeReset(ClvClientRealize* self);
 void clvClientRealizeQuitGame(ClvClientRealize* self);
-void clvClientRealizeCreateRoom(ClvClientRealize* self, const ClvSerializeRoomCreateOptions* roomOptions);
+void clvClientRealizeCreateRoom(
+    ClvClientRealize* self, const ClvSerializeRoomCreateOptions* roomOptions);
 void clvClientRealizeJoinRoom(ClvClientRealize* self, const ClvSerializeRoomJoinOptions* joinRoom);
-void clvClientRealizeListRooms(ClvClientRealize* self, const ClvSerializeListRoomsOptions* listRooms);
+void clvClientRealizeListRooms(
+    ClvClientRealize* self, const ClvSerializeListRoomsOptions* listRooms);
 void clvClientRealizeUpdate(ClvClientRealize* self, MonotonicTimeMs now);
-int clvClientRealizeSendPacket(ClvClientRealize* self, int connectionId, const uint8_t* octets, size_t octetCount);
-int clvClientRealizeReadPacket(ClvClientRealize* self, int* connectionId, uint8_t* octets, size_t octetCount);
 
 #endif

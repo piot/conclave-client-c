@@ -28,7 +28,8 @@ static int onRoomCreateResponse(ClvClient* self, FldInStream* inStream)
     self->mainRoomId = roomId;
     self->roomConnectionIndex = roomConnectionIndex;
 
-    CLOG_C_INFO(&self->log, "room create response. room id: %d connectionIndex: %d", roomId, roomConnectionIndex)
+    CLOG_C_INFO(&self->log, "room create response. room id: %d connectionIndex: %d", roomId,
+        roomConnectionIndex)
 
     return 0;
 }
@@ -47,7 +48,8 @@ static int onRoomJoinResponse(ClvClient* self, FldInStream* inStream)
     self->mainRoomId = roomId;
     self->roomConnectionIndex = roomConnectionIndex;
 
-    CLOG_C_INFO(&self->log, "room join response. room id: %d. connection index %d", roomId, self->roomConnectionIndex)
+    CLOG_C_INFO(&self->log, "room join response. room id: %d. connection index %d", roomId,
+        self->roomConnectionIndex)
 
     self->state = ClvClientStatePlaying;
 
@@ -61,10 +63,12 @@ static int onListRoomsResponse(ClvClient* self, FldInStream* inStream)
 {
     clvSerializeClientInListRoomsResponse(inStream, &self->listRoomsResponseOptions);
 
-    CLOG_C_INFO(&self->log, "got list of rooms back %zu", self->listRoomsResponseOptions.roomInfoCount);
+    CLOG_C_INFO(
+        &self->log, "got list of rooms back %zu", self->listRoomsResponseOptions.roomInfoCount);
     for (size_t i = 0; i < self->listRoomsResponseOptions.roomInfoCount; ++i) {
-        const ClvSerializeRoomInfo* roomInfo = &self->listRoomsResponseOptions.roomInfos[i];
-        CLOG_C_INFO(&self->log, " %zu: %d '%s' '%s'", i, roomInfo->roomId, roomInfo->roomName, roomInfo->hostUserName)
+        CLOG_EXECUTE(const ClvSerializeRoomInfo* roomInfo = &self->listRoomsResponseOptions.roomInfos[i];)
+        CLOG_C_INFO(&self->log, " %zu: %d '%s' user: %" PRIX64, i, roomInfo->roomId,
+            roomInfo->roomName, roomInfo->ownerUserId)
     }
 
     self->state = ClvClientStateListRoomDone;
@@ -90,20 +94,6 @@ static int onRoomReJoinResponse(ClvClient* self, FldInStream* inStream)
     return 0;
 }
 
-static int onChallengeResponse(ClvClient* self, FldInStream* inStream)
-{
-    ClvSerializeClientNonce clientNonce;
-    ClvSerializeServerChallenge serverChallenge;
-    clvSerializeClientInChallenge(inStream, &clientNonce, &serverChallenge);
-
-    CLOG_C_INFO(&self->log, "got challenge from server %" PRIX64, serverChallenge);
-
-    self->serverChallenge = serverChallenge;
-    self->state = ClvClientStateLogin;
-
-    return 0;
-}
-
 static int onLoginResponse(ClvClient* self, FldInStream* inStream)
 {
     ClvSerializeClientNonce toClientNonce;
@@ -123,28 +113,6 @@ static int onLoginResponse(ClvClient* self, FldInStream* inStream)
     return 0;
 }
 
-static int onIncomingPacket(ClvClient* self, FldInStream* inStream)
-{
-    uint8_t fromConnectionIndexInRoom;
-    fldInStreamReadUInt8(inStream, &fromConnectionIndexInRoom);
-    uint16_t octetCountInPacket;
-    fldInStreamReadUInt16(inStream, &octetCountInPacket);
-
-    if (discoidBufferWriteAvailable(&self->inBuffer) < octetCountInPacket + 1 + 2) {
-        CLOG_C_NOTICE(&self->log, "dropping packets since in buffer is full")
-        return 0;
-    }
-
-    discoidBufferWrite(&self->inBuffer, &fromConnectionIndexInRoom, 1);
-    discoidBufferWrite(&self->inBuffer, (uint8_t*) &octetCountInPacket, 2);
-    discoidBufferWrite(&self->inBuffer, inStream->p, octetCountInPacket);
-
-    inStream->p += octetCountInPacket;
-    inStream->pos += octetCountInPacket;
-
-    return 0;
-}
-
 static int clvClientFeed(ClvClient* self, const uint8_t* data, size_t len)
 {
     FldInStream inStream;
@@ -154,26 +122,21 @@ static int clvClientFeed(ClvClient* self, const uint8_t* data, size_t len)
     fldInStreamReadUInt8(&inStream, &cmd);
     // CLOG_C_VERBOSE(&self->log, "cmd: %s", clvSerializeCmdToString(cmd));
     switch (data[0]) {
-        case clvSerializeCmdRoomCreateResponse:
-            return onRoomCreateResponse(self, &inStream);
-        case clvSerializeCmdRoomJoinResponse:
-            return onRoomJoinResponse(self, &inStream);
-        case clvSerializeCmdRoomReJoinResponse:
-            return onRoomReJoinResponse(self, &inStream);
-        case clvSerializeCmdListRoomsResponse:
-            return onListRoomsResponse(self, &inStream);
-        case clvSerializeCmdChallengeResponse:
-            return onChallengeResponse(self, &inStream);
-        case clvSerializeCmdLoginResponse:
-            return onLoginResponse(self, &inStream);
-        case clvSerializeCmdPacketToClient:
-            return onIncomingPacket(self, &inStream);
-            return -4;
-        default:
-            CLOG_C_ERROR(&self->log, "unknown message %02X", cmd)
-            return -1;
+    case clvSerializeCmdRoomCreateResponse:
+        return onRoomCreateResponse(self, &inStream);
+    case clvSerializeCmdRoomJoinResponse:
+        return onRoomJoinResponse(self, &inStream);
+    case clvSerializeCmdRoomReJoinResponse:
+        return onRoomReJoinResponse(self, &inStream);
+    case clvSerializeCmdListRoomsResponse:
+        return onListRoomsResponse(self, &inStream);
+    case clvSerializeCmdLoginResponse:
+        return onLoginResponse(self, &inStream);
+    default:
+        CLOG_C_ERROR(&self->log, "unknown message %02X", cmd)
+        //return -1;
     }
-    return 0;
+    //return 0;
 }
 
 int clvClientReceiveAllInUdpBuffer(ClvClient* self)
@@ -182,17 +145,18 @@ int clvClientReceiveAllInUdpBuffer(ClvClient* self)
     uint8_t receiveBuf[UDP_MAX_RECEIVE_BUF_SIZE];
     size_t count = 0;
     while (1) {
-        int octetCount = datagramTransportReceive(&self->transport, receiveBuf, UDP_MAX_RECEIVE_BUF_SIZE);
+        ssize_t octetCount
+            = datagramTransportReceive(&self->transport, receiveBuf, UDP_MAX_RECEIVE_BUF_SIZE);
         if (octetCount > 0) {
-            clvClientFeed(self, receiveBuf, octetCount);
+            clvClientFeed(self, receiveBuf, (size_t)octetCount);
             count++;
         } else if (octetCount < 0) {
-            printf("error: %d\n", octetCount);
-            return octetCount;
+            CLOG_C_NOTICE(&self->log, "datagramTransportReceive: %zd", octetCount);
+            return (int)octetCount;
         } else {
             break;
         }
     }
 
-    return count;
+    return (int)count;
 }

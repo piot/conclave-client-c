@@ -8,7 +8,7 @@
 int clvClientLogin(ClvClient* self, const char* name)
 {
     self->name = tc_str_dup(name);
-    self->state = ClvClientStateChallenge;
+    self->state = ClvClientStateIdle;
     self->waitTime = 0;
 
     return 0;
@@ -54,7 +54,7 @@ int clvClientReJoin(ClvClient* self)
 
     if (self->roomConnectionIndex <= 0) {
         CLOG_C_ERROR(&self->log, "can not rejoin, we don't have participants")
-        return -1;
+        //return -1;
     }
     self->state = ClvClientStateRoomReJoin;
     self->reJoinRoomOptions.roomId = self->mainRoomId;
