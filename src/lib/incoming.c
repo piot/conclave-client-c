@@ -64,7 +64,7 @@ static int onListRoomsResponse(ClvClient* self, FldInStream* inStream)
     clvSerializeClientInListRoomsResponse(inStream, &self->listRoomsResponseOptions);
 
     CLOG_C_INFO(
-        &self->log, "got list of rooms back %zu", self->listRoomsResponseOptions.roomInfoCount);
+        &self->log, "got list of rooms back %zu", self->listRoomsResponseOptions.roomInfoCount)
     for (size_t i = 0; i < self->listRoomsResponseOptions.roomInfoCount; ++i) {
         CLOG_EXECUTE(const ClvSerializeRoomInfo* roomInfo = &self->listRoomsResponseOptions.roomInfos[i];)
         CLOG_C_INFO(&self->log, " %zu: %d '%s' user: %" PRIX64, i, roomInfo->roomId,
@@ -105,7 +105,7 @@ static int onLoginResponse(ClvClient* self, FldInStream* inStream)
         return 0;
     }
 
-    CLOG_C_INFO(&self->log, "Logged in as session %" PRIX64, userSessionId);
+    CLOG_C_INFO(&self->log, "Logged in as session %" PRIX64, userSessionId)
 
     self->mainUserSessionId = userSessionId;
     self->state = ClvClientStateLoggedIn;
@@ -151,7 +151,7 @@ int clvClientReceiveAllInUdpBuffer(ClvClient* self)
             clvClientFeed(self, receiveBuf, (size_t)octetCount);
             count++;
         } else if (octetCount < 0) {
-            CLOG_C_NOTICE(&self->log, "datagramTransportReceive: %zd", octetCount);
+            CLOG_C_NOTICE(&self->log, "datagramTransportReceive: %zd", octetCount)
             return (int)octetCount;
         } else {
             break;
