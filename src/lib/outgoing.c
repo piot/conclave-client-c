@@ -53,7 +53,7 @@ static int updateRoomReJoin(ClvClient* self, FldOutStream* stream)
 static int updateLogin(ClvClient* self, FldOutStream* stream)
 {
     CLOG_C_INFO(&self->log, "serialize login '%s'", self->name)
-    clvSerializeClientOutLogin(stream, self->nonce, self->mainUserSessionId);
+    clvSerializeClientOutLogin(stream, self->nonce, self->guiseUserSessionId);
     self->waitTime = 60;
 
     return 0;

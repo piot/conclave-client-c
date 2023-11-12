@@ -51,6 +51,7 @@ typedef struct ClvClient {
     uint8_t localPlayerIndex;
     ClvClientState state;
     ClvSerializeUserSessionId mainUserSessionId;
+    GuiseSerializeUserSessionId guiseUserSessionId;
     ClvSerializeRoomId mainRoomId;
     ClvSerializeRoomConnectionIndex roomConnectionIndex;
     ClvSerializeClientNonce nonce;
@@ -62,7 +63,7 @@ typedef struct ClvClient {
 } ClvClient;
 
 int clvClientInit(
-    ClvClient* self, struct ImprintAllocator* memory, DatagramTransport* transport, Clog log);
+    ClvClient* self, struct ImprintAllocator* memory, DatagramTransport* transport, GuiseSerializeUserSessionId userSessionId, Clog log);
 void clvClientReset(ClvClient* self);
 void clvClientReInit(ClvClient* self, DatagramTransport* transport);
 void clvClientDestroy(ClvClient* self);

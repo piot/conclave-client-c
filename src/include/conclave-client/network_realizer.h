@@ -26,6 +26,7 @@ typedef struct ClvClientRealizeSettings {
     DatagramTransport transport;
     char* username;
     struct ImprintAllocator* memory;
+    GuiseSerializeUserSessionId guiseUserSessionId;
     Clog log;
 } ClvClientRealizeSettings;
 
