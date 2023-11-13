@@ -11,6 +11,7 @@
 #include <flood/in_stream.h>
 #include <imprint/allocator.h>
 #include <inttypes.h>
+#include <datagram-transport/types.h>
 
 static int onRoomCreateResponse(ClvClient* self, FldInStream* inStream)
 {
@@ -18,7 +19,7 @@ static int onRoomCreateResponse(ClvClient* self, FldInStream* inStream)
     clvSerializeReadRoomId(inStream, &roomId);
 
     uint8_t roomConnectionIndex;
-    int readErr = clvSerializeReadRoomConnectionIndex(inStream, &roomConnectionIndex);
+    const int readErr = clvSerializeReadRoomConnectionIndex(inStream, &roomConnectionIndex);
     if (readErr < 0) {
         return readErr;
     }
@@ -66,7 +67,8 @@ static int onListRoomsResponse(ClvClient* self, FldInStream* inStream)
     CLOG_C_INFO(
         &self->log, "got list of rooms back %zu", self->listRoomsResponseOptions.roomInfoCount)
     for (size_t i = 0; i < self->listRoomsResponseOptions.roomInfoCount; ++i) {
-        CLOG_EXECUTE(const ClvSerializeRoomInfo* roomInfo = &self->listRoomsResponseOptions.roomInfos[i];)
+        CLOG_EXECUTE(
+            const ClvSerializeRoomInfo* roomInfo = &self->listRoomsResponseOptions.roomInfos[i];)
         CLOG_C_INFO(&self->log, " %zu: %d '%s' user: %" PRIX64, i, roomInfo->roomId,
             roomInfo->roomName, roomInfo->ownerUserId)
     }
@@ -141,12 +143,11 @@ static int clvClientFeed(ClvClient* self, const uint8_t* data, size_t len)
 
 int clvClientReceiveAllInUdpBuffer(ClvClient* self)
 {
-#define UDP_MAX_RECEIVE_BUF_SIZE (64000)
-    uint8_t receiveBuf[UDP_MAX_RECEIVE_BUF_SIZE];
     size_t count = 0;
     while (1) {
+        uint8_t receiveBuf[DATAGRAM_TRANSPORT_MAX_SIZE];
         ssize_t octetCount
-            = datagramTransportReceive(&self->transport, receiveBuf, UDP_MAX_RECEIVE_BUF_SIZE);
+            = datagramTransportReceive(&self->transport, receiveBuf, DATAGRAM_TRANSPORT_MAX_SIZE);
         if (octetCount > 0) {
             clvClientFeed(self, receiveBuf, (size_t)octetCount);
             count++;

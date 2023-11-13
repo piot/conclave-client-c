@@ -22,10 +22,6 @@ static const char* stateToString(ClvClientState state)
         return "playing the game";
     case ClvClientStateRoomReJoin:
         return "room rejoin";
-    case ClvClientStateConnecting:
-        return "connecting";
-    case ClvClientStateConnected:
-        return "connected";
     case ClvClientStateRoomJoin:
         return "room join";
     case ClvClientStateListRooms:
@@ -39,6 +35,6 @@ static const char* stateToString(ClvClientState state)
 
 void clvClientDebugOutput(const ClvClient* self)
 {
-    CLOG_C_INFO(&self->log, "state: %s", stateToString(self->state))
+    CLOG_C_INFO(&self->log, "clv client state: %s", stateToString(self->state))
 }
 #endif

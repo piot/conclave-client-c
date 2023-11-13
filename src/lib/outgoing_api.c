@@ -4,10 +4,13 @@
  *--------------------------------------------------------------------------------------------------------*/
 #include <clog/clog.h>
 #include <conclave-client/client.h>
+#include <stdbool.h>
+#include <inttypes.h>
 
-int clvClientLogin(ClvClient* self, const char* name)
+int clvClientLogin(ClvClient* self, GuiseSerializeUserSessionId userSessionId)
 {
-    self->name = tc_str_dup(name);
+    CLOG_C_VERBOSE(&self->log, "user session id %" PRIx64, userSessionId)
+    self->guiseUserSessionId = userSessionId;
     self->state = ClvClientStateIdle;
     self->waitTime = 0;
 

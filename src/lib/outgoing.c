@@ -52,7 +52,7 @@ static int updateRoomReJoin(ClvClient* self, FldOutStream* stream)
 
 static int updateLogin(ClvClient* self, FldOutStream* stream)
 {
-    CLOG_C_INFO(&self->log, "serialize login '%s'", self->name)
+    CLOG_C_INFO(&self->log, "serialize login %" PRIx64, self->guiseUserSessionId)
     clvSerializeClientOutLogin(stream, self->nonce, self->guiseUserSessionId);
     self->waitTime = 60;
 
@@ -73,8 +73,6 @@ static inline int handleStreamState(ClvClient* self, FldOutStream* outStream)
     case ClvClientStateListRooms:
         return updateListRooms(self, outStream);
     case ClvClientStateIdle:
-    case ClvClientStateConnecting:
-    case ClvClientStateConnected:
     case ClvClientStateLoggedIn:
     case ClvClientStateListRoomDone:
     case ClvClientStatePlaying:
@@ -94,10 +92,8 @@ static inline int handleState(
     switch (self->state) {
     case ClvClientStateIdle:
     case ClvClientStateLoggedIn:
-    case ClvClientStateConnected:
     case ClvClientStatePlaying:
     case ClvClientStateListRoomDone:
-    case ClvClientStateConnecting:
         return 0;
 
     case ClvClientStateLogin:
@@ -120,9 +116,11 @@ static inline int handleState(
 
 int clvClientOutgoing(ClvClient* self, MonotonicTimeMs now, DatagramTransportOut* transportOut)
 {
+    #if defined CLOG_LOG_ENABLED
     if (self->state != ClvClientStatePlaying) {
         clvClientDebugOutput(self);
     }
+    #endif
 
     int result = handleState(self, now, transportOut);
     if (result < 0) {

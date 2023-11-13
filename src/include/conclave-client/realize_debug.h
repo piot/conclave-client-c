@@ -2,14 +2,11 @@
  *  Copyright (c) Peter Bjorklund. All rights reserved. https://github.com/piot/conclave-client-c
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------------------*/
-#ifndef CONCLAVE_CLIENT_OUTGOING_H
-#define CONCLAVE_CLIENT_OUTGOING_H
+#ifndef CONCLAVE_CLIENT_REALIZE_DEBUG_H
+#define CONCLAVE_CLIENT_REALIZE_DEBUG_H
 
-struct ClvClient;
-struct DatagramTransportOut;
+struct ClvClientRealize;
 
-#include <monotonic-time/monotonic_time.h>
-
-int clvClientOutgoing(struct ClvClient* self, MonotonicTimeMs now, struct DatagramTransportOut* transportOut);
+void clvClientRealizeDebugOutput(const struct ClvClientRealize* self);
 
 #endif

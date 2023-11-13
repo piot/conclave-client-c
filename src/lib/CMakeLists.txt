@@ -7,7 +7,8 @@ add_library(conclave-client STATIC
   incoming.c
   network_realize.c
   outgoing.c
-  outgoing_api.c)
+  outgoing_api.c
+  realize_debug.c)
 
 include(Tornado.cmake)
 set_tornado(conclave-client)

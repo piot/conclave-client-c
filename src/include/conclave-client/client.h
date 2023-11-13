@@ -8,12 +8,9 @@
 #include <clog/clog.h>
 #include <conclave-client/outgoing_api.h>
 #include <conclave-serialize/client_out.h>
-#include <datagram-transport/multi.h>
 #include <datagram-transport/transport.h>
 #include <monotonic-time/monotonic_time.h>
-#include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
 
 struct ImprintAllocator;
 
@@ -21,8 +18,6 @@ struct FldOutStream;
 
 typedef enum ClvClientState {
     ClvClientStateIdle,
-    ClvClientStateConnecting,
-    ClvClientStateConnected,
     ClvClientStateLogin,
     ClvClientStateLoggedIn,
     ClvClientStateRoomCreate,
@@ -38,8 +33,6 @@ typedef enum ClvClientState {
 struct ImprintAllocator;
 
 typedef struct ClvClient {
-    const char* name;
-
     ClvSerializeRoomCreateOptions createRoomOptions;
     ClvSerializeRoomJoinOptions joinRoomOptions;
     ClvSerializeRoomReJoinOptions reJoinRoomOptions;
@@ -62,8 +55,8 @@ typedef struct ClvClient {
     Clog log;
 } ClvClient;
 
-int clvClientInit(
-    ClvClient* self, struct ImprintAllocator* memory, DatagramTransport* transport, GuiseSerializeUserSessionId userSessionId, Clog log);
+int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, const DatagramTransport* transport,
+    const GuiseSerializeUserSessionId guiseUserSessionId, const Clog log);
 void clvClientReset(ClvClient* self);
 void clvClientReInit(ClvClient* self, DatagramTransport* transport);
 void clvClientDestroy(ClvClient* self);

@@ -8,7 +8,7 @@
 #include <conclave-client/client.h>
 #include <conclave-client/network_realizer.h>
 #include <conclave-serialize/types.h>
-#include <stddef.h>
+#include <stdbool.h>
 
 struct ImprintAllocator;
 
@@ -24,7 +24,6 @@ typedef enum ClvClientRealizeState {
 
 typedef struct ClvClientRealizeSettings {
     DatagramTransport transport;
-    char* username;
     struct ImprintAllocator* memory;
     GuiseSerializeUserSessionId guiseUserSessionId;
     Clog log;
@@ -44,7 +43,7 @@ typedef struct ClvClientRealize {
     bool isInRoom;
 } ClvClientRealize;
 
-void clvClientRealizeInit(ClvClientRealize* self, const ClvClientRealizeSettings* settings);
+int clvClientRealizeInit(ClvClientRealize* self, const ClvClientRealizeSettings* settings);
 void clvClientRealizeReInit(ClvClientRealize* self, const ClvClientRealizeSettings* settings);
 void clvClientRealizeDestroy(ClvClientRealize* self);
 void clvClientRealizeReset(ClvClientRealize* self);
@@ -54,6 +53,6 @@ void clvClientRealizeCreateRoom(
 void clvClientRealizeJoinRoom(ClvClientRealize* self, const ClvSerializeRoomJoinOptions* joinRoom);
 void clvClientRealizeListRooms(
     ClvClientRealize* self, const ClvSerializeListRoomsOptions* listRooms);
-void clvClientRealizeUpdate(ClvClientRealize* self, MonotonicTimeMs now);
+int clvClientRealizeUpdate(ClvClientRealize* self, MonotonicTimeMs now);
 
 #endif

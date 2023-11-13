@@ -5,31 +5,31 @@
 #include <conclave-client/client.h>
 #include <conclave-client/network_realizer.h>
 #include <conclave-client/outgoing.h>
+#include <conclave-client/realize_debug.h>
 #include <imprint/allocator.h>
+#include <stdbool.h>
 
-void clvClientRealizeInit(ClvClientRealize* self, const ClvClientRealizeSettings* settings)
+int clvClientRealizeInit(ClvClientRealize* self, const ClvClientRealizeSettings* settings)
 {
     self->targetState = ClvClientRealizeStateInit;
     self->state = ClvClientRealizeStateInit;
     self->settings = *settings;
-    self->settings.username = tc_str_dup(self->settings.username);
     self->isInRoom = false;
-    clvClientInit(&self->client, settings->memory, &self->settings.transport, settings->guiseUserSessionId, settings->log);
+    return clvClientInit(&self->client, settings->memory, &self->settings.transport,
+        settings->guiseUserSessionId, settings->log);
 }
 
 void clvClientRealizeReInit(ClvClientRealize* self, const ClvClientRealizeSettings* settings)
 {
-    self->targetState = ClvClientRealizeStateReInit;
+    self->targetState = ClvClientRealizeStateInit;
     self->state = ClvClientRealizeStateReInit;
     self->settings = *settings;
-    self->settings.username = tc_str_dup(self->settings.username);
     self->isInRoom = false;
     clvClientReInit(&self->client, &self->settings.transport);
 }
 
 void clvClientRealizeDestroy(ClvClientRealize* self)
 {
-    tc_free((void*)self->settings.username);
     clvClientDestroy(&self->client);
 }
 
@@ -71,14 +71,10 @@ void clvClientRealizeListRooms(
 static void tryConnectAndLogin(ClvClientRealize* self)
 {
     switch (self->client.state) {
-    case ClvClientStateConnected:
-        clvClientLogin(&self->client, self->settings.username);
+    case ClvClientStateLogin:
+        clvClientLogin(&self->client, self->settings.guiseUserSessionId);
         break;
     case ClvClientStateIdle:
-        break;
-    case ClvClientStateConnecting:
-        break;
-    case ClvClientStateLogin:
         break;
     case ClvClientStateLoggedIn:
         break;
@@ -110,10 +106,6 @@ static void tryCreateRoom(ClvClientRealize* self)
         break;
     case ClvClientStateIdle:
         break;
-    case ClvClientStateConnecting:
-        break;
-    case ClvClientStateConnected:
-        break;
     case ClvClientStateLogin:
         break;
     case ClvClientStateRoomCreate:
@@ -143,10 +135,6 @@ static void tryJoinRoom(ClvClientRealize* self)
         break;
     case ClvClientStateIdle:
         break;
-    case ClvClientStateConnecting:
-        break;
-    case ClvClientStateConnected:
-        break;
     case ClvClientStateLogin:
         break;
     case ClvClientStateRoomCreate:
@@ -172,10 +160,6 @@ static void tryListRooms(ClvClientRealize* self)
         break;
     case ClvClientStateIdle:
         break;
-    case ClvClientStateConnecting:
-        break;
-    case ClvClientStateConnected:
-        break;
     case ClvClientStateLogin:
         break;
     case ClvClientStateRoomCreate:
@@ -191,11 +175,17 @@ static void tryListRooms(ClvClientRealize* self)
     }
 }
 
-void clvClientRealizeUpdate(ClvClientRealize* self, MonotonicTimeMs now)
+int clvClientRealizeUpdate(ClvClientRealize* self, MonotonicTimeMs now)
 {
+    int result = 0;
+
+#if defined CLOG_LOG_ENABLED
+    clvClientRealizeDebugOutput(self);
+#endif
+
     if (self->state != ClvClientRealizeStateCleared
         && self->targetState != ClvClientRealizeStateInit) {
-        clvClientUpdate(&self->client, now);
+        result = clvClientUpdate(&self->client, now);
     }
 
     switch (self->targetState) {
@@ -218,5 +208,6 @@ void clvClientRealizeUpdate(ClvClientRealize* self, MonotonicTimeMs now)
         }
         break;
     }
-}
 
+    return result;
+}
