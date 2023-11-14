@@ -10,19 +10,20 @@
 void clvClientReInit(ClvClient* self, DatagramTransport* transport)
 {
     self->transport = *transport;
-    self->state = ClvClientStateLogin;
+    self->state = ClvClientStateIdle;
+    self->waitTime = 0;
 }
 
-int clvClientInit(ClvClient* self, struct ImprintAllocator* memory,
+int clvClientInit(ClvClient* self,
     const DatagramTransport* transport, const GuiseSerializeUserSessionId guiseUserSessionId,
     Clog log)
 {
     self->log = log;
-    self->memory = memory;
-    self->state = ClvClientStateLogin;
+    self->state = ClvClientStateIdle;
     self->transport = *transport;
     self->guiseUserSessionId = guiseUserSessionId;
     self->nonce = secureRandomUInt64();
+    self->waitTime = 0;
 
     return 0;
 }

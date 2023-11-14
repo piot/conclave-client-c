@@ -11,7 +11,7 @@ int clvClientLogin(ClvClient* self, GuiseSerializeUserSessionId userSessionId)
 {
     CLOG_C_VERBOSE(&self->log, "user session id %" PRIx64, userSessionId)
     self->guiseUserSessionId = userSessionId;
-    self->state = ClvClientStateIdle;
+    self->state = ClvClientStateLogin;
     self->waitTime = 0;
 
     return 0;

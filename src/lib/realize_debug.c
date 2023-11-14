@@ -16,6 +16,8 @@ static const char* realizeStateToString(ClvClientRealizeState state)
         return "realizeReInit";
     case ClvClientRealizeStateCleared:
         return "realizeCleared";
+    case ClvClientRealizeStateLoggedIn:
+        return "realizeLoggedIn";
     case ClvClientRealizeStateCreateRoom:
         return "realizeCreateRoom";
     case ClvClientRealizeStateJoinRoom:

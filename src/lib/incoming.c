@@ -8,10 +8,10 @@
 #include <conclave-serialize/client_in.h>
 #include <conclave-serialize/debug.h>
 #include <conclave-serialize/serialize.h>
+#include <datagram-transport/types.h>
 #include <flood/in_stream.h>
 #include <imprint/allocator.h>
 #include <inttypes.h>
-#include <datagram-transport/types.h>
 
 static int onRoomCreateResponse(ClvClient* self, FldInStream* inStream)
 {
@@ -104,6 +104,9 @@ static int onLoginResponse(ClvClient* self, FldInStream* inStream)
     clvSerializeClientInLogin(inStream, &toClientNonce, &userSessionId);
 
     if (toClientNonce != self->nonce) {
+        CLOG_C_NOTICE(&self->log,
+            "received wrong nonce. expected %" PRIX64 " but received %" PRIX64, self->nonce,
+            toClientNonce)
         return 0;
     }
 
@@ -122,7 +125,9 @@ static int clvClientFeed(ClvClient* self, const uint8_t* data, size_t len)
 
     uint8_t cmd;
     fldInStreamReadUInt8(&inStream, &cmd);
-    // CLOG_C_VERBOSE(&self->log, "cmd: %s", clvSerializeCmdToString(cmd));
+#if defined CLOG_LOG_ENABLED
+    CLOG_C_VERBOSE(&self->log, "cmd: %s", clvSerializeCmdToString(cmd));
+#endif
     switch (data[0]) {
     case clvSerializeCmdRoomCreateResponse:
         return onRoomCreateResponse(self, &inStream);

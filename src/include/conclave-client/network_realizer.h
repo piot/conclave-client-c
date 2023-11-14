@@ -16,6 +16,7 @@ typedef enum ClvClientRealizeState {
     ClvClientRealizeStateInit,
     ClvClientRealizeStateReInit,
     ClvClientRealizeStateCleared,
+    ClvClientRealizeStateLoggedIn,
     ClvClientRealizeStateCreateRoom,
     ClvClientRealizeStateJoinRoom,
     ClvClientRealizeStateListRooms,
@@ -24,7 +25,6 @@ typedef enum ClvClientRealizeState {
 
 typedef struct ClvClientRealizeSettings {
     DatagramTransport transport;
-    struct ImprintAllocator* memory;
     GuiseSerializeUserSessionId guiseUserSessionId;
     Clog log;
 } ClvClientRealizeSettings;

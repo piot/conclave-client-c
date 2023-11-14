@@ -12,8 +12,6 @@
 #include <monotonic-time/monotonic_time.h>
 #include <stdint.h>
 
-struct ImprintAllocator;
-
 struct FldOutStream;
 
 typedef enum ClvClientState {
@@ -51,11 +49,13 @@ typedef struct ClvClient {
     DatagramTransport transport;
 
     size_t frame;
-    struct ImprintAllocator* memory;
     Clog log;
 } ClvClient;
 
-int clvClientInit(ClvClient* self, struct ImprintAllocator* memory, const DatagramTransport* transport,
+int clvClientInit(ClvClient* self,
+
+
+const DatagramTransport* transport,
     const GuiseSerializeUserSessionId guiseUserSessionId, const Clog log);
 void clvClientReset(ClvClient* self);
 void clvClientReInit(ClvClient* self, DatagramTransport* transport);
