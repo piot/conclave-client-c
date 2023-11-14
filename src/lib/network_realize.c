@@ -13,16 +13,24 @@ int clvClientRealizeInit(ClvClientRealize* self, const ClvClientRealizeSettings*
 {
     self->targetState = ClvClientRealizeStateLoggedIn;
     self->state = ClvClientRealizeStateInit;
+    self->log = settings->log;
     self->settings = *settings;
     self->isInRoom = false;
+
+    Clog clvClientLog;
+    clvClientLog.config = settings->log.config;
+    tc_snprintf(self->subLog, 32, "%s/client", self->log.constantPrefix);
+    clvClientLog.constantPrefix = self->subLog;
+
     return clvClientInit(
-        &self->client, &self->settings.transport, settings->guiseUserSessionId, settings->log);
+        &self->client, &self->settings.transport, settings->guiseUserSessionId, clvClientLog);
 }
 
 void clvClientRealizeReInit(ClvClientRealize* self, const ClvClientRealizeSettings* settings)
 {
     self->targetState = ClvClientRealizeStateCleared;
     self->state = ClvClientRealizeStateReInit;
+    self->log = settings->log;
     self->settings = *settings;
     self->isInRoom = false;
     clvClientReInit(&self->client, &self->settings.transport);
@@ -87,7 +95,9 @@ static void tryCreateRoom(ClvClientRealize* self)
         clvClientRoomCreate(&self->client, &self->createRoomOptions);
         break;
     case ClvClientStatePlaying:
+        CLOG_C_INFO(&self->log, "room created")
         self->state = ClvClientRealizeStateCreateRoom;
+        self->targetState = ClvClientRealizeStateLoggedIn;
         self->isInRoom = true;
         break;
     default:
@@ -131,7 +141,7 @@ int clvClientRealizeUpdate(ClvClientRealize* self, MonotonicTimeMs now)
 {
     int result = 0;
 
-#if defined CLOG_LOG_ENABLED
+#if defined CLOG_LOG_ENABLED && false
     clvClientRealizeDebugOutput(self);
 #endif
 

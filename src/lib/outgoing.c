@@ -84,7 +84,7 @@ static inline int handleStreamState(ClvClient* self, FldOutStream* outStream)
 static inline int handleState(
     ClvClient* self, MonotonicTimeMs now, DatagramTransportOut* transportOut)
 {
-    (void) now; // TODO: use rate limiting
+    (void)now; // TODO: use rate limiting
 
 #define UDP_MAX_SIZE (1200)
     static uint8_t buf[UDP_MAX_SIZE];
@@ -116,11 +116,11 @@ static inline int handleState(
 
 int clvClientOutgoing(ClvClient* self, MonotonicTimeMs now, DatagramTransportOut* transportOut)
 {
-    #if defined CLOG_LOG_ENABLED
+#if defined CLOG_LOG_ENABLED && false
     if (self->state != ClvClientStatePlaying) {
         clvClientDebugOutput(self);
     }
-    #endif
+#endif
 
     int result = handleState(self, now, transportOut);
     if (result < 0) {

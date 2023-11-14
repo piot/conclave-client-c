@@ -40,6 +40,9 @@ typedef struct ClvClientRealize {
     ClvSerializeRoomJoinOptions joinRoomOptions;
     ClvSerializeListRoomsOptions listRoomsOptions;
 
+    Clog log;
+    char subLog[32];
+
     bool isInRoom;
 } ClvClientRealize;
 
