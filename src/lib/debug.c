@@ -35,6 +35,7 @@ static const char* stateToString(ClvClientState state)
 
 void clvClientDebugOutput(const ClvClient* self)
 {
-    CLOG_C_INFO(&self->log, "clv client state: %s", stateToString(self->state))
+    CLOG_C_INFO(&self->log, "state: %s", stateToString(self->state))
 }
+
 #endif

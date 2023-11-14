@@ -33,6 +33,6 @@ static const char* realizeStateToString(ClvClientRealizeState state)
 
 void clvClientRealizeDebugOutput(const ClvClientRealize* self)
 {
-    CLOG_C_INFO(&self->client.log, "clv client realize state: %s", realizeStateToString(self->state))
+    CLOG_C_INFO(&self->log, "realize state: %s target: %s", realizeStateToString(self->state), realizeStateToString(self->targetState))
 }
 #endif
