@@ -126,7 +126,7 @@ static int clvClientFeed(ClvClient* self, const uint8_t* data, size_t len)
     uint8_t cmd;
     fldInStreamReadUInt8(&inStream, &cmd);
 #if defined CLOG_LOG_ENABLED
-    CLOG_C_VERBOSE(&self->log, "cmd: %s", clvSerializeCmdToString(cmd));
+    CLOG_C_VERBOSE(&self->log, "cmd: %s", clvSerializeCmdToString(cmd))
 #endif
     switch (data[0]) {
     case clvSerializeCmdRoomCreateResponse:
