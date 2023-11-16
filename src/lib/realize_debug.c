@@ -32,7 +32,8 @@ const char* clvClientRealizeStateToString(ClvClientRealizeState state)
 #if defined CLOG_LOG_ENABLED
 void clvClientRealizeDebugOutput(const ClvClientRealize* self)
 {
-    CLOG_C_INFO(&self->log, "realize state: %s target: %s", realizeStateToString(self->state),
-        realizeStateToString(self->targetState))
+    CLOG_C_INFO(&self->log, "realize state: %s target: %s",
+        clvClientRealizeStateToString(self->state),
+        clvClientRealizeStateToString(self->targetState))
 }
 #endif
