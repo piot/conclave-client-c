@@ -36,6 +36,9 @@ typedef struct ClvClient {
     ClvSerializeRoomReJoinOptions reJoinRoomOptions;
     ClvSerializeListRoomsOptions listRoomsOptions;
     ClvSerializeListRoomsResponseOptions listRoomsResponseOptions;
+    ClvSerializePingResponseOptions pingResponseOptions;
+
+    uint8_t pingResponseOptionsVersion;
 
     int waitTime;
 
@@ -45,6 +48,7 @@ typedef struct ClvClient {
     GuiseSerializeUserSessionId guiseUserSessionId;
     ClvSerializeRoomId mainRoomId;
     ClvSerializeRoomConnectionIndex roomConnectionIndex;
+    uint8_t roomCreateVersion;
     ClvSerializeClientNonce nonce;
     DatagramTransport transport;
 
@@ -65,5 +69,6 @@ int clvClientUpdate(ClvClient* self, MonotonicTimeMs now);
 int clvClientFindParticipantId(
     const ClvClient* self, uint8_t localUserDeviceIndex, uint8_t* participantId);
 int clvClientReJoin(ClvClient* self);
+int clvClientPing(ClvClient* self, uint64_t knowledge);
 
 #endif

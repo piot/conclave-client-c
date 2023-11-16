@@ -57,5 +57,6 @@ void clvClientRealizeJoinRoom(ClvClientRealize* self, const ClvSerializeRoomJoin
 void clvClientRealizeListRooms(
     ClvClientRealize* self, const ClvSerializeListRoomsOptions* listRooms);
 int clvClientRealizeUpdate(ClvClientRealize* self, MonotonicTimeMs now);
+int clvClientRealizePing(ClvClientRealize* self, uint64_t knowledge);
 
 #endif

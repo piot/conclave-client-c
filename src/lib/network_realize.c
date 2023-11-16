@@ -137,6 +137,11 @@ static void tryListRooms(ClvClientRealize* self)
     }
 }
 
+int clvClientRealizePing(ClvClientRealize* self, uint64_t knowledge)
+{
+    return clvClientPing(&self->client, knowledge);
+}
+
 int clvClientRealizeUpdate(ClvClientRealize* self, MonotonicTimeMs now)
 {
     int result = 0;

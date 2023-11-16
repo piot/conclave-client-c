@@ -5,9 +5,7 @@
 #include <conclave-client/client.h>
 #include <conclave-client/debug.h>
 
-#if defined CLOG_LOG_ENABLED
-
-static const char* stateToString(ClvClientState state)
+const char* clvClientStateToString(ClvClientState state)
 {
     switch (state) {
     case ClvClientStateLogin:
@@ -32,6 +30,8 @@ static const char* stateToString(ClvClientState state)
 
     return "unknown";
 }
+
+#if defined CLOG_LOG_ENABLED
 
 void clvClientDebugOutput(const ClvClient* self)
 {

@@ -8,5 +8,6 @@
 struct ClvClientRealize;
 
 void clvClientRealizeDebugOutput(const struct ClvClientRealize* self);
+const char* clvClientRealizeStateToString(ClvClientRealizeState state);
 
 #endif

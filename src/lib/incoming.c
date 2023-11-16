@@ -28,6 +28,7 @@ static int onRoomCreateResponse(ClvClient* self, FldInStream* inStream)
     self->waitTime = 0;
     self->mainRoomId = roomId;
     self->roomConnectionIndex = roomConnectionIndex;
+    self->roomCreateVersion++;
 
     CLOG_C_INFO(&self->log, "room create response. room id: %d connectionIndex: %d", roomId,
         roomConnectionIndex)
@@ -75,6 +76,23 @@ static int onListRoomsResponse(ClvClient* self, FldInStream* inStream)
 
     self->state = ClvClientStateListRoomDone;
     self->waitTime = 160;
+
+    return 0;
+}
+
+static int onPingResponse(ClvClient* self, FldInStream* inStream)
+{
+    clvSerializeClientInPingResponse(inStream, &self->pingResponseOptions);
+    self->pingResponseOptionsVersion++;
+
+    CLOG_C_INFO(&self->log, "got room info back. members: %zu",
+        self->pingResponseOptions.roomInfo.memberCount)
+    for (size_t i = 0; i < self->pingResponseOptions.roomInfo.memberCount; ++i) {
+        CLOG_EXECUTE(bool isOwner = i == self->pingResponseOptions.roomInfo.indexOfOwner;)
+        CLOG_EXECUTE(
+            const GuiseSerializeUserId* userId = &self->pingResponseOptions.roomInfo.members[i];)
+        CLOG_C_INFO(&self->log, " %zu user: %" PRIX64 " isOwner:%d", i, *userId, isOwner)
+    }
 
     return 0;
 }
@@ -139,6 +157,8 @@ static int clvClientFeed(ClvClient* self, const uint8_t* data, size_t len)
         return onListRoomsResponse(self, &inStream);
     case clvSerializeCmdLoginResponse:
         return onLoginResponse(self, &inStream);
+    case clvSerializeCmdPingResponse:
+        return onPingResponse(self, &inStream);
     default:
         CLOG_C_ERROR(&self->log, "unknown message %02X", cmd)
         //return -1;

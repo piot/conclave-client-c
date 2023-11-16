@@ -7,6 +7,7 @@
 #include <conclave-client/debug.h>
 #include <conclave-client/outgoing.h>
 #include <conclave-serialize/serialize.h>
+#include <datagram-transport/types.h>
 #include <flood/out_stream.h>
 #include <inttypes.h>
 
@@ -86,8 +87,7 @@ static inline int handleState(
 {
     (void)now; // TODO: use rate limiting
 
-#define UDP_MAX_SIZE (1200)
-    static uint8_t buf[UDP_MAX_SIZE];
+    static uint8_t buf[DATAGRAM_TRANSPORT_MAX_SIZE];
 
     switch (self->state) {
     case ClvClientStateIdle:
@@ -102,7 +102,7 @@ static inline int handleState(
     case ClvClientStateRoomReJoin:
     case ClvClientStateListRooms: {
         FldOutStream outStream;
-        fldOutStreamInit(&outStream, buf, UDP_MAX_SIZE);
+        fldOutStreamInit(&outStream, buf, DATAGRAM_TRANSPORT_MAX_SIZE);
         int result = handleStreamState(self, &outStream);
         if (result < 0) {
             CLOG_SOFT_ERROR("couldnt send it")

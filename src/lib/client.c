@@ -5,6 +5,8 @@
 #include <conclave-client/client.h>
 #include <conclave-client/incoming.h>
 #include <conclave-client/outgoing.h>
+#include <datagram-transport/types.h>
+#include <flood/out_stream.h>
 #include <secure-random/secure_random.h>
 
 void clvClientReInit(ClvClient* self, DatagramTransport* transport)
@@ -12,11 +14,12 @@ void clvClientReInit(ClvClient* self, DatagramTransport* transport)
     self->transport = *transport;
     self->state = ClvClientStateIdle;
     self->waitTime = 0;
+    self->pingResponseOptionsVersion = 0;
+    self->roomCreateVersion = 0;
 }
 
-int clvClientInit(ClvClient* self,
-    const DatagramTransport* transport, const GuiseSerializeUserSessionId guiseUserSessionId,
-    Clog log)
+int clvClientInit(ClvClient* self, const DatagramTransport* transport,
+    const GuiseSerializeUserSessionId guiseUserSessionId, Clog log)
 {
     self->log = log;
     self->state = ClvClientStateIdle;
@@ -24,6 +27,8 @@ int clvClientInit(ClvClient* self,
     self->guiseUserSessionId = guiseUserSessionId;
     self->nonce = secureRandomUInt64();
     self->waitTime = 0;
+    self->pingResponseOptionsVersion = 0;
+    self->roomCreateVersion = 0;
 
     return 0;
 }
@@ -67,4 +72,20 @@ int clvClientUpdate(ClvClient* self, MonotonicTimeMs now)
     errorCode = sendPackets(self, now);
 
     return errorCode;
+}
+
+int clvClientPing(ClvClient* self, uint64_t knowledge)
+{
+    FldOutStream outStream;
+
+    static uint8_t buf[DATAGRAM_TRANSPORT_MAX_SIZE];
+
+    fldOutStreamInit(&outStream, buf, DATAGRAM_TRANSPORT_MAX_SIZE);
+    int result = clvSerializeClientOutPing(&outStream, self->mainUserSessionId, knowledge);
+    if (result < 0) {
+        CLOG_SOFT_ERROR("couldnt send it")
+        return result;
+    }
+    CLOG_C_VERBOSE(&self->log, "sending ping packet %zu octets", outStream.pos)
+    return self->transport.send(self->transport.self, outStream.octets, outStream.pos);
 }

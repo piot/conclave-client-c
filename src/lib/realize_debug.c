@@ -5,9 +5,7 @@
 #include <conclave-client/network_realizer.h>
 #include <conclave-client/realize_debug.h>
 
-#if defined CLOG_LOG_ENABLED
-
-static const char* realizeStateToString(ClvClientRealizeState state)
+const char* clvClientRealizeStateToString(ClvClientRealizeState state)
 {
     switch (state) {
     case ClvClientRealizeStateInit:
@@ -31,8 +29,10 @@ static const char* realizeStateToString(ClvClientRealizeState state)
     return "unknown";
 }
 
+#if defined CLOG_LOG_ENABLED
 void clvClientRealizeDebugOutput(const ClvClientRealize* self)
 {
-    CLOG_C_INFO(&self->log, "realize state: %s target: %s", realizeStateToString(self->state), realizeStateToString(self->targetState))
+    CLOG_C_INFO(&self->log, "realize state: %s target: %s", realizeStateToString(self->state),
+        realizeStateToString(self->targetState))
 }
 #endif
