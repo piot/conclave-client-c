@@ -8,28 +8,25 @@
 const char* clvClientStateToString(ClvClientState state)
 {
     switch (state) {
-    case ClvClientStateLogin:
-        return "login";
     case ClvClientStateIdle:
         return "idle";
+    case ClvClientStateLogIn:
+        return "login";
     case ClvClientStateLoggedIn:
         return "logged in";
     case ClvClientStateRoomCreate:
-        return "room create";
-    case ClvClientStatePlaying:
-        return "playing the game";
-    case ClvClientStateRoomReJoin:
-        return "room rejoin";
+        return "roomCreate";
+    case ClvClientStateRoomList:
+        return "roomList";
     case ClvClientStateRoomJoin:
-        return "room join";
-    case ClvClientStateListRooms:
-        return "trying to list rooms";
-    case ClvClientStateListRoomDone:
-        return "list rooms complete";
+        return "roomJoin";
+    case ClvClientStateRoomReJoin:
+        return "roomReJoin";
     }
 
     return "unknown";
 }
+
 
 #if defined CLOG_LOG_ENABLED
 

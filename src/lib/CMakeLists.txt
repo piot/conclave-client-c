@@ -5,10 +5,7 @@ add_library(conclave-client STATIC
   client.c
   debug.c
   incoming.c
-  network_realize.c
-  outgoing.c
-  outgoing_api.c
-  realize_debug.c)
+  outgoing.c)
 
 include(Tornado.cmake)
 set_tornado(conclave-client)
@@ -23,5 +20,6 @@ target_link_libraries(conclave-client PUBLIC
   monotonic-time
   imprint
   discoid
-  secure-random)
+  secure-random
+  time-tick)
 

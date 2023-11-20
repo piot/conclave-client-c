@@ -24,11 +24,18 @@ static int onRoomCreateResponse(ClvClient* self, FldInStream* inStream)
         return readErr;
     }
 
-    self->state = ClvClientStatePlaying;
-    self->waitTime = 0;
+    if (self->mainRoomId != 0) {
+        CLOG_C_NOTICE(&self->log, "already got a room create answer")
+        return 0;
+    }
+
     self->mainRoomId = roomId;
     self->roomConnectionIndex = roomConnectionIndex;
     self->roomCreateVersion++;
+
+    if (self->state == ClvClientStateRoomCreate) {
+        self->state = ClvClientStateLoggedIn;
+    }
 
     CLOG_C_INFO(&self->log, "room create response. room id: %d connectionIndex: %d", roomId,
         roomConnectionIndex)
@@ -53,8 +60,6 @@ static int onRoomJoinResponse(ClvClient* self, FldInStream* inStream)
     CLOG_C_INFO(&self->log, "room join response. room id: %d. connection index %d", roomId,
         self->roomConnectionIndex)
 
-    self->state = ClvClientStatePlaying;
-
     self->reJoinRoomOptions.roomId = roomId;
     self->reJoinRoomOptions.roomConnectionIndex = self->roomConnectionIndex;
 
@@ -64,18 +69,20 @@ static int onRoomJoinResponse(ClvClient* self, FldInStream* inStream)
 static int onListRoomsResponse(ClvClient* self, FldInStream* inStream)
 {
     clvSerializeClientInListRoomsResponse(inStream, &self->listRoomsResponseOptions);
+    self->listRoomsOptionsVersion++;
+
+    if (self->state == ClvClientStateRoomList) {
+        self->state = ClvClientStateLoggedIn;
+    }
 
     CLOG_C_INFO(
         &self->log, "got list of rooms back %zu", self->listRoomsResponseOptions.roomInfoCount)
     for (size_t i = 0; i < self->listRoomsResponseOptions.roomInfoCount; ++i) {
         CLOG_EXECUTE(
             const ClvSerializeRoomInfo* roomInfo = &self->listRoomsResponseOptions.roomInfos[i];)
-        CLOG_C_INFO(&self->log, " %zu: %d '%s' user: %" PRIX64, i, roomInfo->roomId,
+        CLOG_C_INFO(&self->log, " %zu: %d '%s' user: %" PRIX64 "\n", i, roomInfo->roomId,
             roomInfo->roomName, roomInfo->ownerUserId)
     }
-
-    self->state = ClvClientStateListRoomDone;
-    self->waitTime = 160;
 
     return 0;
 }
@@ -108,8 +115,6 @@ static int onRoomReJoinResponse(ClvClient* self, FldInStream* inStream)
 
     self->mainRoomId = roomId;
     self->roomConnectionIndex = roomConnectionIndex;
-    self->state = ClvClientStatePlaying;
-    self->waitTime = 0;
 
     return 0;
 }

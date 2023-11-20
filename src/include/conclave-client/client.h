@@ -6,24 +6,22 @@
 #define CONCLAVE_CLIENT_CLIENT_H
 
 #include <clog/clog.h>
-#include <conclave-client/outgoing_api.h>
 #include <conclave-serialize/client_out.h>
 #include <datagram-transport/transport.h>
 #include <monotonic-time/monotonic_time.h>
 #include <stdint.h>
+#include <time-tick/time_tick.h>
 
 struct FldOutStream;
 
 typedef enum ClvClientState {
     ClvClientStateIdle,
-    ClvClientStateLogin,
+    ClvClientStateLogIn,
     ClvClientStateLoggedIn,
     ClvClientStateRoomCreate,
+    ClvClientStateRoomList,
     ClvClientStateRoomJoin,
     ClvClientStateRoomReJoin,
-    ClvClientStateListRooms,
-    ClvClientStateListRoomDone,
-    ClvClientStatePlaying,
 } ClvClientState;
 
 #define CONCLAVE_CLIENT_MAX_LOCAL_USERS_COUNT (8)
@@ -31,44 +29,51 @@ typedef enum ClvClientState {
 struct ImprintAllocator;
 
 typedef struct ClvClient {
+    ClvClientState state;
+
     ClvSerializeRoomCreateOptions createRoomOptions;
+    uint8_t roomCreateVersion;
     ClvSerializeRoomJoinOptions joinRoomOptions;
     ClvSerializeRoomReJoinOptions reJoinRoomOptions;
     ClvSerializeListRoomsOptions listRoomsOptions;
+    uint8_t listRoomsOptionsVersion;
     ClvSerializeListRoomsResponseOptions listRoomsResponseOptions;
     ClvSerializePingResponseOptions pingResponseOptions;
-
     uint8_t pingResponseOptionsVersion;
 
-    int waitTime;
-
     uint8_t localPlayerIndex;
-    ClvClientState state;
+
     ClvSerializeUserSessionId mainUserSessionId;
     GuiseSerializeUserSessionId guiseUserSessionId;
     ClvSerializeRoomId mainRoomId;
     ClvSerializeRoomConnectionIndex roomConnectionIndex;
-    uint8_t roomCreateVersion;
     ClvSerializeClientNonce nonce;
     DatagramTransport transport;
 
+    TimeTick timeTick;
+
+    char timeTickLogName[32];
     size_t frame;
     Clog log;
 } ClvClient;
 
-int clvClientInit(ClvClient* self,
-
-
-const DatagramTransport* transport,
-    const GuiseSerializeUserSessionId guiseUserSessionId, const Clog log);
+int clvClientInit(ClvClient* self, const DatagramTransport* transport,
+    const GuiseSerializeUserSessionId guiseUserSessionId, MonotonicTimeMs now, const Clog log);
 void clvClientReset(ClvClient* self);
 void clvClientReInit(ClvClient* self, DatagramTransport* transport);
 void clvClientDestroy(ClvClient* self);
 void clvClientDisconnect(ClvClient* self);
+
 int clvClientUpdate(ClvClient* self, MonotonicTimeMs now);
+
 int clvClientFindParticipantId(
     const ClvClient* self, uint8_t localUserDeviceIndex, uint8_t* participantId);
 int clvClientReJoin(ClvClient* self);
 int clvClientPing(ClvClient* self, uint64_t knowledge);
+
+int clvClientCreateRoom(ClvClient* self, const ClvSerializeRoomCreateOptions* roomOptions);
+void clvClientJoinRoom(ClvClient* self, const ClvSerializeRoomJoinOptions* joinRoom);
+void clvClientListRooms(ClvClient* self, const ClvSerializeListRoomsOptions* listRooms);
+int clvClientLogin(ClvClient* self, GuiseSerializeUserSessionId guiseUserSessionId);
 
 #endif

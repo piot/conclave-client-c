@@ -10,6 +10,6 @@ struct DatagramTransportOut;
 
 #include <monotonic-time/monotonic_time.h>
 
-int clvClientOutgoing(struct ClvClient* self, MonotonicTimeMs now, struct DatagramTransportOut* transportOut);
+int clvClientOutgoing(struct ClvClient* self, struct DatagramTransportOut* transportOut);
 
 #endif

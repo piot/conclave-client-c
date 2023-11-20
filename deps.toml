@@ -31,6 +31,9 @@ version = "*"
 name = 'piot/secure-random-c'
 version = "*"
 
+[[dependencies]]
+name = 'piot/time-tick-c'
+version = "*"
 
 [[development]]
 name = 'piot/udp-client-c'

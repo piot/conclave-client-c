@@ -8,27 +8,63 @@
 #include <datagram-transport/types.h>
 #include <flood/out_stream.h>
 #include <secure-random/secure_random.h>
+#include <inttypes.h>
+
+static int sendPackets(ClvClient* self)
+{
+    DatagramTransportOut transportOut;
+    transportOut.self = self->transport.self;
+    transportOut.send = self->transport.send;
+
+    int errorCode = clvClientOutgoing(self, &transportOut);
+    if (errorCode < 0) {
+        return errorCode;
+    }
+
+    return 0;
+}
+
+static int sendTick(void* _self)
+{
+    ClvClient* self = (ClvClient*)_self;
+
+    int result = 0;
+
+    if (self->state != ClvClientStateIdle) {
+        result = sendPackets(self);
+    }
+
+    return result;
+}
 
 void clvClientReInit(ClvClient* self, DatagramTransport* transport)
 {
     self->transport = *transport;
-    self->state = ClvClientStateIdle;
-    self->waitTime = 0;
+    self->state = ClvClientStateLogIn;
     self->pingResponseOptionsVersion = 0;
     self->roomCreateVersion = 0;
+    self->listRoomsOptionsVersion = 0;
+    self->mainRoomId = 0;
 }
 
 int clvClientInit(ClvClient* self, const DatagramTransport* transport,
-    const GuiseSerializeUserSessionId guiseUserSessionId, Clog log)
+    const GuiseSerializeUserSessionId guiseUserSessionId, MonotonicTimeMs now, Clog log)
 {
     self->log = log;
-    self->state = ClvClientStateIdle;
+    self->state = ClvClientStateLogIn;
     self->transport = *transport;
     self->guiseUserSessionId = guiseUserSessionId;
     self->nonce = secureRandomUInt64();
-    self->waitTime = 0;
     self->pingResponseOptionsVersion = 0;
     self->roomCreateVersion = 0;
+    self->listRoomsOptionsVersion = 0;
+    self->mainRoomId = 0;
+    Clog tickLog;
+    tickLog.config = log.config;
+    tc_snprintf(self->timeTickLogName, 32, "%s/tick", self->log.constantPrefix);
+    tickLog.constantPrefix = self->timeTickLogName;
+
+    timeTickInit(&self->timeTick, 160, self, sendTick, now, tickLog);
 
     return 0;
 }
@@ -43,35 +79,22 @@ void clvClientDisconnect(ClvClient* self)
     (void)self; // TODO: disconnect ClvClient
 }
 
-static int sendPackets(ClvClient* self, MonotonicTimeMs now)
+int clvClientUpdate(ClvClient* self, MonotonicTimeMs now)
 {
-    DatagramTransportOut transportOut;
-    transportOut.self = self->transport.self;
-    transportOut.send = self->transport.send;
+    int receiveResult = clvClientReceiveAllInUdpBuffer(self);
+    if (receiveResult < 0) {
+        return receiveResult;
+    }
 
-    int errorCode = clvClientOutgoing(self, now, &transportOut);
-    if (errorCode < 0) {
-        return errorCode;
+#if defined CLOG_LOG_ENABLED && false
+    clvClientRealizeDebugOutput(self);
+#endif
+    int tickResult = timeTickUpdate(&self->timeTick, now);
+    if (tickResult < 0) {
+        return tickResult;
     }
 
     return 0;
-}
-
-int clvClientUpdate(ClvClient* self, MonotonicTimeMs now)
-{
-    int errorCode = clvClientReceiveAllInUdpBuffer(self);
-    if (errorCode < 0) {
-        return (int)errorCode;
-    }
-
-    self->waitTime--;
-    if (self->waitTime > 0) {
-        return 0;
-    }
-
-    errorCode = sendPackets(self, now);
-
-    return errorCode;
 }
 
 int clvClientPing(ClvClient* self, uint64_t knowledge)
@@ -88,4 +111,64 @@ int clvClientPing(ClvClient* self, uint64_t knowledge)
     }
     CLOG_C_VERBOSE(&self->log, "sending ping packet %zu octets", outStream.pos)
     return self->transport.send(self->transport.self, outStream.octets, outStream.pos);
+}
+
+int clvClientCreateRoom(ClvClient* self, const ClvSerializeRoomCreateOptions* createRoom)
+{
+    if (self->mainRoomId != 0) {
+        CLOG_C_NOTICE(&self->log, "already in a room, so can not create more")
+        return 0;
+    }
+    if (self->state != ClvClientStateLoggedIn) {
+        CLOG_C_NOTICE(&self->log, "must be in a logged in state to create a room")
+        return 0;
+    }
+
+    self->createRoomOptions = *createRoom;
+    self->createRoomOptions.name = tc_str_dup(createRoom->name);
+    self->state = ClvClientStateRoomCreate;
+
+    return 0;
+}
+
+void clvClientJoinRoom(ClvClient* self, const ClvSerializeRoomJoinOptions* joinRoom)
+{
+    if (self->mainRoomId != 0) {
+        CLOG_C_NOTICE(&self->log, "already in a room, so can not join another one")
+        return;
+    }
+
+    if (self->state != ClvClientStateLoggedIn) {
+        CLOG_C_NOTICE(&self->log, "must be in a logged in state to join a room")
+        return;
+    }
+
+    self->joinRoomOptions = *joinRoom;
+    self->joinRoomOptions.roomIdToJoin = joinRoom->roomIdToJoin;
+    self->state = ClvClientStateRoomJoin;
+}
+
+void clvClientListRooms(ClvClient* self, const ClvSerializeListRoomsOptions* listRooms)
+{
+    if (self->state != ClvClientStateLoggedIn) {
+        CLOG_C_WARN(&self->log, "not stable state, so can not list rooms")
+        return;
+    }
+    if (self->state != ClvClientStateLoggedIn) {
+        CLOG_C_NOTICE(&self->log, "must be in a logged in state to list rooms")
+        return;
+    }
+
+    self->listRoomsOptions = *listRooms;
+    self->state = ClvClientStateRoomList;
+}
+
+
+int clvClientLogin(ClvClient* self, GuiseSerializeUserSessionId userSessionId)
+{
+    CLOG_C_VERBOSE(&self->log, "user session id %" PRIx64, userSessionId)
+    self->guiseUserSessionId = userSessionId;
+    self->state = ClvClientStateLogIn;
+
+    return 0;
 }
