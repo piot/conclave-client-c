@@ -7,12 +7,14 @@
 
 #include <clog/clog.h>
 #include <conclave-serialize/client_out.h>
+#include <datagram-reassembly/reassembly.h>
 #include <datagram-transport/transport.h>
 #include <monotonic-time/monotonic_time.h>
 #include <stdint.h>
 #include <time-tick/time_tick.h>
 
 struct FldOutStream;
+struct ImprintAllocatorWithFree;
 
 typedef enum ClvClientState {
     ClvClientStateIdle,
@@ -50,6 +52,9 @@ typedef struct ClvClient {
     ClvSerializeClientNonce nonce;
     DatagramTransport transport;
 
+    DatagramReassembly reassembly;
+    struct ImprintAllocatorWithFree* allocatorWithFree;
+
     TimeTick timeTick;
 
     char timeTickLogName[32];
@@ -58,7 +63,8 @@ typedef struct ClvClient {
 } ClvClient;
 
 int clvClientInit(ClvClient* self, const DatagramTransport* transport,
-    const GuiseSerializeUserSessionId guiseUserSessionId, MonotonicTimeMs now, const Clog log);
+    const GuiseSerializeUserSessionId guiseUserSessionId, MonotonicTimeMs now,
+    struct ImprintAllocatorWithFree* allocator, const Clog log);
 void clvClientReset(ClvClient* self);
 void clvClientReInit(ClvClient* self, DatagramTransport* transport);
 void clvClientDestroy(ClvClient* self);

@@ -21,5 +21,6 @@ target_link_libraries(conclave-client PUBLIC
   imprint
   discoid
   secure-random
-  time-tick)
+  time-tick
+  datagram-reassembly)
 

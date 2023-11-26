@@ -60,15 +60,29 @@ static int onRoomJoinResponse(ClvClient* self, FldInStream* inStream)
     CLOG_C_INFO(&self->log, "room join response. room id: %d. connection index %d", roomId,
         self->roomConnectionIndex)
 
+    if (self->state == ClvClientStateRoomJoin) {
+        self->state = ClvClientStateLoggedIn;
+    }
+
     self->reJoinRoomOptions.roomId = roomId;
     self->reJoinRoomOptions.roomConnectionIndex = self->roomConnectionIndex;
 
     return 0;
 }
 
-static int onListRoomsResponse(ClvClient* self, FldInStream* inStream)
+static int onListRoomsResponse(ClvClient* self, FldInStream* reassemblyStream)
 {
-    clvSerializeClientInListRoomsResponse(inStream, &self->listRoomsResponseOptions);
+    datagramReassemblyReceive(&self->reassembly, reassemblyStream);
+    if (!datagramReassemblyIsComplete(&self->reassembly)) {
+        return 0;
+    }
+
+    FldInStream inStream;
+    fldInStreamInit(&inStream, self->reassembly.blob, self->reassembly.receivedOctetCount);
+
+
+
+    clvSerializeClientInListRoomsResponse(&inStream, &self->allocatorWithFree->allocator, &self->listRoomsResponseOptions);
     self->listRoomsOptionsVersion++;
 
     if (self->state == ClvClientStateRoomList) {

@@ -7,8 +7,8 @@
 #include <conclave-client/outgoing.h>
 #include <datagram-transport/types.h>
 #include <flood/out_stream.h>
-#include <secure-random/secure_random.h>
 #include <inttypes.h>
+#include <secure-random/secure_random.h>
 
 static int sendPackets(ClvClient* self)
 {
@@ -48,7 +48,8 @@ void clvClientReInit(ClvClient* self, DatagramTransport* transport)
 }
 
 int clvClientInit(ClvClient* self, const DatagramTransport* transport,
-    const GuiseSerializeUserSessionId guiseUserSessionId, MonotonicTimeMs now, Clog log)
+    const GuiseSerializeUserSessionId guiseUserSessionId, MonotonicTimeMs now,
+    struct ImprintAllocatorWithFree* allocator, Clog log)
 {
     self->log = log;
     self->state = ClvClientStateLogIn;
@@ -63,6 +64,8 @@ int clvClientInit(ClvClient* self, const DatagramTransport* transport,
     tickLog.config = log.config;
     tc_snprintf(self->timeTickLogName, 32, "%s/tick", self->log.constantPrefix);
     tickLog.constantPrefix = self->timeTickLogName;
+    datagramReassemblyInit(&self->reassembly, allocator, 16 * 1024, log);
+    self->allocatorWithFree = allocator;
 
     timeTickInit(&self->timeTick, 160, self, sendTick, now, tickLog);
 
@@ -144,7 +147,6 @@ void clvClientJoinRoom(ClvClient* self, const ClvSerializeRoomJoinOptions* joinR
     }
 
     self->joinRoomOptions = *joinRoom;
-    self->joinRoomOptions.roomIdToJoin = joinRoom->roomIdToJoin;
     self->state = ClvClientStateRoomJoin;
 }
 
@@ -162,7 +164,6 @@ void clvClientListRooms(ClvClient* self, const ClvSerializeListRoomsOptions* lis
     self->listRoomsOptions = *listRooms;
     self->state = ClvClientStateRoomList;
 }
-
 
 int clvClientLogin(ClvClient* self, GuiseSerializeUserSessionId userSessionId)
 {

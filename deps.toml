@@ -35,6 +35,10 @@ version = "*"
 name = 'piot/time-tick-c'
 version = "*"
 
+[[dependencies]]
+name = 'piot/datagram-reassembly'
+version = "*"
+
 [[development]]
 name = 'piot/udp-client-c'
 version = "*"
