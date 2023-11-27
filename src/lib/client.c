@@ -128,7 +128,6 @@ int clvClientCreateRoom(ClvClient* self, const ClvSerializeRoomCreateOptions* cr
     }
 
     self->createRoomOptions = *createRoom;
-    self->createRoomOptions.name = tc_str_dup(createRoom->name);
     self->state = ClvClientStateRoomCreate;
 
     return 0;

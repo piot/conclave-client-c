@@ -72,6 +72,7 @@ static int onRoomJoinResponse(ClvClient* self, FldInStream* inStream)
 
 static int onListRoomsResponse(ClvClient* self, FldInStream* reassemblyStream)
 {
+    CLOG_C_VERBOSE(&self->log, "receive room list response")
     datagramReassemblyReceive(&self->reassembly, reassemblyStream);
     if (!datagramReassemblyIsComplete(&self->reassembly)) {
         return 0;
@@ -80,9 +81,8 @@ static int onListRoomsResponse(ClvClient* self, FldInStream* reassemblyStream)
     FldInStream inStream;
     fldInStreamInit(&inStream, self->reassembly.blob, self->reassembly.receivedOctetCount);
 
-
-
-    clvSerializeClientInListRoomsResponse(&inStream, &self->allocatorWithFree->allocator, &self->listRoomsResponseOptions);
+    clvSerializeClientInListRoomsResponse(
+        &inStream, &self->allocatorWithFree->allocator, &self->listRoomsResponseOptions);
     self->listRoomsOptionsVersion++;
 
     if (self->state == ClvClientStateRoomList) {
