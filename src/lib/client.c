@@ -100,14 +100,15 @@ int clvClientUpdate(ClvClient* self, MonotonicTimeMs now)
     return 0;
 }
 
-int clvClientPing(ClvClient* self, uint64_t knowledge)
+int clvClientPing(ClvClient* self, uint64_t knowledge, bool hasConnectionToOwner)
 {
     FldOutStream outStream;
 
     static uint8_t buf[DATAGRAM_TRANSPORT_MAX_SIZE];
 
     fldOutStreamInit(&outStream, buf, DATAGRAM_TRANSPORT_MAX_SIZE);
-    int result = clvSerializeClientOutPing(&outStream, self->mainUserSessionId, knowledge);
+    int result = clvSerializeClientOutPing(&outStream, self->mainUserSessionId, knowledge,
+        self->pingResponseOptions.term, hasConnectionToOwner);
     if (result < 0) {
         CLOG_SOFT_ERROR("couldnt send it")
         return result;

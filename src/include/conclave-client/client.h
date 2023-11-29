@@ -32,7 +32,6 @@ struct ImprintAllocator;
 
 typedef struct ClvClient {
     ClvClientState state;
-
     ClvSerializeRoomCreateOptions createRoomOptions;
     uint8_t roomCreateVersion;
     ClvSerializeRoomJoinOptions joinRoomOptions;
@@ -42,21 +41,16 @@ typedef struct ClvClient {
     ClvSerializeListRoomsResponseOptions listRoomsResponseOptions;
     ClvSerializePingResponseOptions pingResponseOptions;
     uint8_t pingResponseOptionsVersion;
-
     uint8_t localPlayerIndex;
-
     ClvSerializeUserSessionId mainUserSessionId;
     GuiseSerializeUserSessionId guiseUserSessionId;
     ClvSerializeRoomId mainRoomId;
     ClvSerializeRoomConnectionIndex roomConnectionIndex;
     ClvSerializeClientNonce nonce;
     DatagramTransport transport;
-
     DatagramReassembly reassembly;
     struct ImprintAllocatorWithFree* allocatorWithFree;
-
     TimeTick timeTick;
-
     char timeTickLogName[32];
     size_t frame;
     Clog log;
@@ -69,14 +63,11 @@ void clvClientReset(ClvClient* self);
 void clvClientReInit(ClvClient* self, DatagramTransport* transport);
 void clvClientDestroy(ClvClient* self);
 void clvClientDisconnect(ClvClient* self);
-
 int clvClientUpdate(ClvClient* self, MonotonicTimeMs now);
-
 int clvClientFindParticipantId(
     const ClvClient* self, uint8_t localUserDeviceIndex, uint8_t* participantId);
 int clvClientReJoin(ClvClient* self);
-int clvClientPing(ClvClient* self, uint64_t knowledge);
-
+int clvClientPing(ClvClient* self, uint64_t knowledge, bool hasConnectionToOwner);
 int clvClientCreateRoom(ClvClient* self, const ClvSerializeRoomCreateOptions* roomOptions);
 void clvClientJoinRoom(ClvClient* self, const ClvSerializeRoomJoinOptions* joinRoom);
 void clvClientListRooms(ClvClient* self, const ClvSerializeListRoomsOptions* listRooms);
